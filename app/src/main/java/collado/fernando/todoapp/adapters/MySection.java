@@ -19,7 +19,7 @@ import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapt
 import io.github.luizgrp.sectionedrecyclerviewadapter.StatelessSection;
 
 /**
- * Created by root on 3/02/18.
+ * Created by Fernando on 3/02/18.
  */
 
 public class MySection extends StatelessSection {
@@ -34,18 +34,15 @@ public class MySection extends StatelessSection {
             .headerResourceId(R.layout.section_header)
             .build()
         );
-        this.section_date = section_name;
+
+        this.section_date = section_name.substring(8,10) + '-' + section_name.substring(5,7) + '-' + section_name.substring(0,4);;
         this.taskList = taskList;
         this.sectionedAdapter = sectionedAdapter;
 
+        // Set all sections hidden except today's section
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         String current_date = sdf.format(System.currentTimeMillis());
         this.expanded = current_date.equals(this.section_date);
-    }
-
-    public void setTaskList(ArrayList<Task> taskList) {
-        this.taskList = taskList;
-        updateView();
     }
 
     public void updateView(){
@@ -70,6 +67,7 @@ public class MySection extends StatelessSection {
 
         itemHolder.taskName.setText(taskList.get(position).getName());
         itemHolder.taskDone.setChecked(taskList.get(position).isDone());
+
         itemHolder.taskDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -85,7 +83,6 @@ public class MySection extends StatelessSection {
                 updateView();
             }
         });
-
     }
 
     @Override
@@ -114,8 +111,6 @@ public class MySection extends StatelessSection {
 
     }
 
-
-
     class HeaderViewHolder extends RecyclerView.ViewHolder {
         public TextView section_date;
         private final View rootView;
@@ -134,8 +129,6 @@ public class MySection extends StatelessSection {
         private final CheckBox taskDone;
         private final ImageView removeBtn;
 
-
-
         public MyItemViewHolder(View itemView){
             super(itemView);
             taskDone = (CheckBox)itemView.findViewById(R.id.cb);
@@ -143,10 +136,6 @@ public class MySection extends StatelessSection {
             removeBtn = (ImageView) itemView.findViewById(R.id.deleteTask);
             removeBtn.setClickable(true);
         }
-
-        public void onClick(int section){}
-
-
     }
 
 }

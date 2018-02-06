@@ -15,9 +15,11 @@
             />
 
         <DatePicker
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/date_picker_dialog"
+            android:calendarViewShown="false"
+            android:datePickerMode="spinner"
             ></DatePicker>
 
 </LinearLayout>

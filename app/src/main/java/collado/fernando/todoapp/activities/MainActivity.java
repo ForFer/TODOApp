@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     protected DBHelper db;
     private HashMap<String, ArrayList<Task>> tasks_by_day;
     private ArrayList<MySection> mySections = new ArrayList<>();
+    private RecyclerView sectionHeader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +93,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void setBanner(){
+        /**
+         * Set today's date at the banner (below the "let's do this" text)
+         */
         TextView bannerDay = (TextView) findViewById(R.id.bannerDay);
         TextView bannerDate = (TextView) findViewById(R.id.bannerDate);
 
@@ -107,6 +112,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setNotification(Notification notification, int notification_id) {
+        /**
+         * Set daily notifications (WiP)
+         */
         Intent myIntent = new Intent(this , NotificationPublisher.class);
         myIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notification_id);
         myIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
@@ -134,28 +142,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setLinearLayoutManager(){
-        RecyclerView sectionHeader = (RecyclerView)findViewById(R.id.task_list);
+        /**
+         * Sets a LinearLayoutManager with a SectionedRecyclerView
+         * Iterates over all the content of the DB to create sections (days)
+         * with tasks each section
+         */
+        sectionHeader = (RecyclerView)findViewById(R.id.task_list);
 
         LinearLayoutManager mLinMan = new LinearLayoutManager(this);
 
         sectionHeader.setLayoutManager(mLinMan);
         sectionHeader.setHasFixedSize(true);
 
-        SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
-
-        tasks_by_day = db.getAllTasks();
-
-        for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
-            String section_d = entry.getKey();
-            MySection section = new MySection(section_d,entry.getValue(), sectionAdapter);
-            sectionAdapter.addSection(section);
-            mySections.add(section);
-        }
-
-        sectionHeader.setAdapter(sectionAdapter);
+        setAdapterView();
     }
 
     private AlertDialog.Builder setCustomAlertDialog(){
+        /**
+         * Add Task handler
+         * Creates an AlertDialog with a text and a DatePicker input
+         * Stores in DB
+         * Updates value of HashMap
+         * And calls to notifyDataSetChanged in the section that the change was made
+         */
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add TODO");
 
@@ -165,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
         final DatePicker datePicker = alertLayout.findViewById(R.id.date_picker_dialog);
 
         builder.setView(alertLayout);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String name = input.getText().toString().trim();
@@ -177,29 +186,27 @@ public class MainActivity extends AppCompatActivity {
                 String str_day = day<=9?"0"+String.valueOf(day):String.valueOf(day);
                 String str_month = month<=9?"0"+String.valueOf(month):String.valueOf(month);
                 String current_date = String.valueOf(year) + "-" + str_month + "-" +  str_day ;
-                String current_date_formated = current_date.substring(8,10) + '-' + current_date.substring(5,7) + '-' + current_date.substring(0,4);
+
 
                 long date = System.currentTimeMillis();
 
                 Task newTask = new Task(name, date, current_date);
 
-                ArrayList<Task> tList = tasks_by_day.get(current_date_formated);
-                if(tList == null){
-                    tasks_by_day.put(current_date_formated, new ArrayList<Task>());
-                }
-                tasks_by_day.get(current_date_formated).add(newTask);
                 db.addTask(newTask);
 
-                int section_index = 0;
+                setAdapterView();
 
-                for(String  entry : tasks_by_day.keySet()){
-                    if(entry.equals(current_date_formated)){
-                        break;
-                    }
-                    section_index++;
+                /*
+                String current_date_formated = current_date.substring(8,10) + '-' + current_date.substring(5,7) + '-' + current_date.substring(0,4);
+                ArrayList<Task> tList = tasks_by_day.get(current_date_formated);
+                if(tList == null){
+                    getData();
                 }
+                else{
+                    tasks_by_day.get(current_date_formated).add(0, newTask);
+                }
+                */
 
-                mySections.get(section_index).updateView();
                 dialog.dismiss();
             }
         });
@@ -211,6 +218,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
         return builder;
+    }
+
+    public void setAdapterView(){
+        SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
+        tasks_by_day = db.getAllTasks();
+        mySections = new ArrayList<>();
+
+        for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
+            String section_d = entry.getKey();
+            MySection section = new MySection(section_d,entry.getValue(), sectionAdapter);
+            sectionAdapter.addSection(section);
+            mySections.add(section);
+        }
+        sectionHeader.setAdapter(sectionAdapter);
     }
 
 

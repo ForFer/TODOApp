@@ -1,7 +1,7 @@
 package collado.fernando.todoapp.models;
 
 /**
- * Created by root on 3/02/18.
+ * Created by Fernando on 3/02/18.
  */
 
 public class Task {

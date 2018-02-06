@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.util.Log;
 
 /**
- * Created by root on 4/02/18.
+ * Created by Fernando on 4/02/18.
  */
 
 public class NotificationPublisher extends BroadcastReceiver {

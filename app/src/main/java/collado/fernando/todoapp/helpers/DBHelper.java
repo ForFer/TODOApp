@@ -13,11 +13,11 @@ import java.util.LinkedHashMap;
 import collado.fernando.todoapp.models.Task;
 
 /**
- * Created by root on 3/02/18.
+ * Created by Fernando on 3/02/18.
  */
 
 public class DBHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     private static final String DATABASE_NAME = "tasks.db";
     private static final String TAG = DBHelper.class.getSimpleName().toString();
@@ -76,8 +76,12 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public HashMap<String, ArrayList<Task>> getAllTasks(){
-
-        LinkedHashMap<String, ArrayList<Task>> tasks_by_day = new LinkedHashMap<String, ArrayList<Task>>();
+        /**
+         * Create a LinkedHashMap<section_name, section_content> from all the tasks in DB
+         * First grouping and ordering by date, then a query for each of those dates to
+         * populate the HashMap
+         */
+        LinkedHashMap<String, ArrayList<Task>> tasks_by_day = new LinkedHashMap<>();
         SQLiteDatabase db = this.getWritableDatabase();
 
         String date_query = "SELECT date FROM tasks group by date order by date DESC";
@@ -86,17 +90,17 @@ public class DBHelper extends SQLiteOpenHelper {
         if(cursor.moveToFirst()){
             do {
                 String current_date = cursor.getString(0);
-                String query = "SELECT * FROM tasks where date = ? "; // + " order by timestamp ";
+                String query = "SELECT * FROM tasks where date = ? order by timestamp DESC";
                 Cursor inner_cursor = db.rawQuery(query, new String[] {current_date});
 
-                ArrayList<Task> tasks = new ArrayList<Task>();
-                Task task = null;
+                ArrayList<Task> tasks = new ArrayList<>();
+                Task task;
                 if(inner_cursor.moveToFirst()){
                     do {
                         task = cursorToTask(inner_cursor);
                         tasks.add(task);
                     } while(inner_cursor.moveToNext());
-                    tasks_by_day.put(dateFormat(current_date), tasks);
+                    tasks_by_day.put(current_date, tasks);
                 }
             } while(cursor.moveToNext());
         }
@@ -130,8 +134,10 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public Task cursorToTask(Cursor cursor){
-        //id, task, done, date, timestamp
-        Task task = new Task(cursor.getString(1), Long.parseLong(cursor.getString(4)), dateFormat(cursor.getString(3)));
+        /**
+         * Column order --> id, task, done, date, timestamp
+         */
+        Task task = new Task(cursor.getString(1), Long.parseLong(cursor.getString(4)), cursor.getString(3));
 
         task.setTaskId(Integer.parseInt(cursor.getString(0)));
         task.setDone(Integer.parseInt(cursor.getString(2)) == 1);
@@ -140,6 +146,9 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public ContentValues taskToContentValues(Task task){
+        /**
+         * Create VALUES to insert from task
+         */
         ContentValues value = new ContentValues();
         value.put(task.KEY_NAME, task.getName());
         value.put(task.KEY_DONE, task.isDone() == true ? 1 : 0);
@@ -147,10 +156,6 @@ public class DBHelper extends SQLiteOpenHelper {
         value.put(task.KEY_DATE, task.getDate());
 
         return value;
-    }
-
-    public String dateFormat(String unformated_date){
-        return unformated_date.substring(8,10) + '-' + unformated_date.substring(5,7) + '-' + unformated_date.substring(0,4);
     }
 
 }
