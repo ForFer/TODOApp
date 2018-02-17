@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private HashMap<String, ArrayList<Task>> tasks_by_day;
     private ArrayList<MySection> mySections = new ArrayList<>();
     private RecyclerView sectionHeader;
+    private String _bannerDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         this.setLinearLayoutManager();
-        this.setBanner();
+        this.setBanner(getDate());
         //this.setNotification(getNotification("x TODOS to do today", "TODO"), (int)System.currentTimeMillis());
     }
 
@@ -101,23 +102,55 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    protected void setBanner(){
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        updateBanner();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        updateBanner();
+
+    }
+
+    protected void updateBanner(){
+        String[] date = getDate();
+        if(!(_bannerDate.equals(date[1]))){
+            setBanner(date);
+        }
+    }
+
+    protected void setBanner(String[] date){
         /**
          * Set today's date at the banner (below the "let's do this" text)
          */
         TextView bannerDay = (TextView) findViewById(R.id.bannerDay);
         TextView bannerDate = (TextView) findViewById(R.id.bannerDate);
 
+        bannerDay.setText(date[0]);
+
+        _bannerDate = date[1];
+        bannerDate.setText(_bannerDate);
+
+    }
+
+    protected String[] getDate() {
+
+        String[] _date = new String[2];
+
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
-        String dayOfWeek = sdf.format(d);
-        bannerDay.setText(dayOfWeek);
+        _date[0] = sdf.format(d);
 
         long date = System.currentTimeMillis();
         sdf = new SimpleDateFormat("dd/MM/yyy");
-        String dateString = sdf.format(date);
-        bannerDate.setText(dateString);
+        _date[1] = sdf.format(date);
 
+        return _date;
     }
 
     private void setNotification(Notification notification, int notification_id) {
