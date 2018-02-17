@@ -7,7 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -23,6 +27,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "tasks.db";
     private static final String TAG = DBHelper.class.getSimpleName().toString();
+
+    private static final String STATS_QUERY_LIMIT = "30";
 
     public DBHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -291,19 +297,33 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Stat> getAllStats(){
+        /**
+         * Get all stats prior to today
+         */
 
         ArrayList<Stat> stats = new ArrayList<>();
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String date_query = "SELECT * FROM stats order by date ASC";
+        String date_query = "SELECT * FROM stats order by date ASC LIMIT " + STATS_QUERY_LIMIT;
         Cursor cursor = db.rawQuery(date_query, null);
+
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date today = new Date();
 
         if(cursor.moveToFirst()){
             Stat stat;
             do {
                 stat = cursorToStat(cursor);
-                stats.add(stat);
+                try {
+                    Date date = format.parse(stat.getDate());
+                    Log.d("COMPARISON", Integer.toString(today.compareTo(date)));
+                    Log.d("dates", date.toString());
+                    if(today.compareTo(date) >= 0) stats.add(stat);
+                }
+                catch (ParseException e){
+                    // Nothing
+                }
             } while(cursor.moveToNext());
         }
         return stats;

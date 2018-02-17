@@ -17,7 +17,8 @@ public class DailyReportXAxisValueFormatter implements IAxisValueFormatter {
 
     @Override
     public String getFormattedValue(float value, AxisBase axis) {
-        return _date[(int) value];
+        String date = _date[(int) value];
+        return date.substring(8,10) + "-" + date.substring(5,7) + "-" + date.substring(0,4);
     }
 
 }

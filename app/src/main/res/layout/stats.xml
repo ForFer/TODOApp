@@ -1,48 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/stats_relative_layout"
-    >
 
-    <TextView
-        android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+
+    android:padding="5dp">
+
+    <LinearLayout
         android:layout_height="wrap_content"
-        android:textSize="30dp"
-        android:text="@string/action_analytics"
-        android:padding="10dp"
-        android:id="@+id/stats_title"
-        />
-
-    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:text="@string/daily_stats"
-        android:layout_below="@+id/stats_title"
-        android:id="@+id/daily_stats_title"
-        />
+        >
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/daily_stats_chart"
-        android:layout_width="match_parent"
-        android:layout_height="450dp"
-        android:layout_below="@+id/daily_stats_title"
-        />
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="1200dp"
+            android:id="@+id/stats_relative_layout"
+            >
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:text="@string/total_stats"
-        android:layout_below="@+id/daily_stats_chart"
-        android:id="@+id/total_stats_title"
-        />
-    <com.github.mikephil.charting.charts.PieChart
-        android:id="@+id/total_stats_pie"
-        android:layout_width="match_parent"
-        android:layout_height="450dp"
-        android:layout_below="@+id/total_stats_title" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="30dp"
+                android:text="@string/action_analytics"
+                android:padding="10dp"
+                android:id="@+id/stats_title"
+                />
 
-</RelativeLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/daily_stats"
+                android:layout_below="@+id/stats_title"
+                android:id="@+id/daily_stats_title"
+                />
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/daily_stats_chart"
+                android:layout_width="match_parent"
+                android:layout_height="450dp"
+                android:layout_below="@+id/daily_stats_title"
+                android:layout_marginBottom="30dp"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/total_stats"
+                android:layout_below="@+id/daily_stats_chart"
+                android:id="@+id/total_stats_title"
+                />
+            <com.github.mikephil.charting.charts.PieChart
+                android:id="@+id/total_stats_pie"
+                android:layout_width="match_parent"
+                android:layout_height="450dp"
+                android:layout_below="@+id/total_stats_title" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+</ScrollView>
