@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">TODOApp</string>
     <string name="action_settings">Settings</string>
+    <string name="action_analytics">Stats</string>
+    <string name="daily_stats">Daily report</string>
+    <string name="total_stats">Total stats </string>
 </resources>

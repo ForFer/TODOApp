@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import collado.fernando.todoapp.models.Stat;
 import collado.fernando.todoapp.models.Task;
 
 /**
@@ -35,15 +36,28 @@ public class DBHelper extends SQLiteOpenHelper {
                 "date DATE," +
                 "timestamp INTEGER )";
         db.execSQL(CREATE_TASK_TABLE);
+
+        CREATE_TASK_TABLE = "CREATE TABLE IF NOT EXISTS stats ( " +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "total INTEGER," +
+                "done INTEGER," +
+                "date DATE";
+        db.execSQL(CREATE_TASK_TABLE);
+
     }
     
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVer){
-        this.deleteAllTasks(db);
+        //this.deleteAllTasks(db);
+        //this.deleteAllStats(db);
         this.onCreate(db);
     }
 
     public void deleteAllTasks(SQLiteDatabase db){
         db.execSQL("DROP TABLE IF EXISTS tasks");
+    }
+
+    public void deleteAllStats(SQLiteDatabase db){
+        db.execSQL("DROP TABLE IF EXISTS stats");
     }
 
     public void addTask(Task task){
@@ -52,6 +66,9 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues value = taskToContentValues(task);
         db.insert(task.TABLE, null, value);
         db.close();
+
+        updateStats(task, 0);
+
     }
 
     public Task getTask(int id){
@@ -107,7 +124,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return tasks_by_day;
     }
 
-    public int updateTask(Task task){
+    public int updateTask(Task task, boolean previousState){
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues value = taskToContentValues(task);
@@ -118,6 +135,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 );
 
         db.close();
+
+        updateStats(task, 2, previousState);
 
         return i;
     }
@@ -131,6 +150,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 );
         db.close();
 
+        updateStats(task, 1);
     }
 
     public Task cursorToTask(Cursor cursor){
@@ -156,6 +176,133 @@ public class DBHelper extends SQLiteOpenHelper {
         value.put(task.KEY_DATE, task.getDate());
 
         return value;
+    }
+
+
+    public Stat cursorToStat(Cursor cursor){
+        /**
+         * Column order --> id, total, done, date
+         */
+        Stat stat = new Stat(Integer.parseInt(cursor.getString(1)), Integer.parseInt(cursor.getString(2)), cursor.getString(3));
+        stat.setID(Integer.parseInt(cursor.getString(0)));
+
+        return stat;
+    }
+
+    public ContentValues statToContentValues(Stat stat){
+        /**
+         * Create VALUES to insert from stat
+         */
+        ContentValues value = new ContentValues();
+        value.put(stat.KEY_DATE, stat.getDate());
+        value.put(stat.KEY_DONE, stat.getDone());
+        value.put(stat.KEY_TOTAL, stat.getTotal());
+
+        return value;
+    }
+
+    public void addStat(Stat stat){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues value = statToContentValues(stat);
+        db.insert(stat.TABLE, null, value);
+        db.close();
+
+    }
+
+    public int updateStat(Stat stat){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues value = statToContentValues(stat);
+        int i = db.update(Stat.TABLE,
+                value,
+                Stat.KEY_ID + " = ? ",
+                new String[] { String.valueOf(stat.getId())}
+        );
+
+        db.close();
+
+        return i;
+    }
+
+
+
+    public void updateStats(Task task, int option){
+        /**
+         * option 0 -> adding task
+         * option 1 -> removing task
+         */
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "SELECT * FROM stats where date = ?";
+        Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
+
+        if (cursor != null){ // If there is a stat for that day, get value, update, and store
+            cursor.moveToFirst();
+            Stat oldStat = cursorToStat(cursor);
+            int total,totalDone;
+
+            if(option == 0){
+                total = oldStat.getDone() + 1;
+                totalDone = task.isDone() ? oldStat.getDone() + 1 : oldStat.getDone() - 1;
+            }
+            else{
+                total = oldStat.getDone() - 1;
+                totalDone = task.isDone() ? oldStat.getDone() + 1 : oldStat.getDone() - 1;
+            }
+
+            oldStat.setDone(totalDone);
+            oldStat.setTotal(total);
+            updateStat(oldStat);
+        }
+        else { // If there is no stat for that day, create value if adding task
+            if(option == 0){
+                Stat stat = new Stat(1, task.isDone() ? 1 : 0, task.getDate());
+                addStat(stat);
+            }
+        }
+    }
+
+    public void updateStats(Task task, int option, boolean previousState){
+        /**
+         * case for when a task is being updated (from undone to done, and vice versa)
+         *
+         */
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "SELECT * FROM stats where date = ?";
+        Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+            Stat oldStat = cursorToStat(cursor);
+            int totalDone = previousState ? 1 : -1 + oldStat.getDone();
+            oldStat.setDone(totalDone);
+            updateStat(oldStat);
+        }
+
+    }
+
+    public ArrayList<Stat> getAllStats(){
+
+        ArrayList<Stat> stats = new ArrayList<>();
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String date_query = "SELECT * FROM stats order by date DESC";
+        Cursor cursor = db.rawQuery(date_query, null);
+
+        if(cursor.moveToFirst()){
+            Stat stat;
+            do {
+                stat = cursorToStat(cursor);
+                stats.add(stat);
+            } while(cursor.moveToNext());
+        }
+        return stats;
+
     }
 
 }

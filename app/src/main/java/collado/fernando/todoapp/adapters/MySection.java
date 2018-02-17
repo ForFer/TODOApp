@@ -72,7 +72,7 @@ public class MySection extends StatelessSection {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 taskList.get(position).setDone(b);
-                db.updateTask(taskList.get(position));
+                db.updateTask(taskList.get(position), !b);
             }
         });
         itemHolder.removeBtn.setOnClickListener(new View.OnClickListener(){

@@ -34,6 +34,7 @@ import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.adapters.MySection;
 import collado.fernando.todoapp.helpers.DBHelper;
 import collado.fernando.todoapp.helpers.NotificationPublisher;
+import collado.fernando.todoapp.models.Stat;
 import collado.fernando.todoapp.models.Task;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
@@ -87,6 +88,17 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }
+
+        if (id == R.id.action_analytics) {
+            return true;
+            /*
+            Intent stats = new Intent(this, Stats.class);
+            ArrayList<Stat> allStats = db.getAllStats();
+            stats.putExtra("stats", allStats);
+            startActivity(stats);
+            return true;
+            */
         }
 
         return super.onOptionsItemSelected(item);
@@ -186,26 +198,12 @@ public class MainActivity extends AppCompatActivity {
                 String str_day = day<=9?"0"+String.valueOf(day):String.valueOf(day);
                 String str_month = month<=9?"0"+String.valueOf(month):String.valueOf(month);
                 String current_date = String.valueOf(year) + "-" + str_month + "-" +  str_day ;
+                long timestamp = System.currentTimeMillis();
 
-
-                long date = System.currentTimeMillis();
-
-                Task newTask = new Task(name, date, current_date);
-
+                Task newTask = new Task(name, timestamp, current_date);
                 db.addTask(newTask);
 
                 setAdapterView();
-
-                /*
-                String current_date_formated = current_date.substring(8,10) + '-' + current_date.substring(5,7) + '-' + current_date.substring(0,4);
-                ArrayList<Task> tList = tasks_by_day.get(current_date_formated);
-                if(tList == null){
-                    getData();
-                }
-                else{
-                    tasks_by_day.get(current_date_formated).add(0, newTask);
-                }
-                */
 
                 dialog.dismiss();
             }
