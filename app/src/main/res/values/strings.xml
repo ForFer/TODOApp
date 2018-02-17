@@ -3,5 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_analytics">Stats</string>
     <string name="daily_stats">Daily report</string>
-    <string name="total_stats">Total stats </string>
+    <string name="total_stats">Total relative stats </string>
+    <string name="total_stats_bar">Total absolute stats </string>
+
 </resources>

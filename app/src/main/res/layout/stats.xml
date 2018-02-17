@@ -6,7 +6,9 @@
 
     android:layout_height="wrap_content"
 
-    android:padding="5dp">
+    android:padding="5dp"
+    android:paddingBottom="30dp"
+    >
 
     <LinearLayout
         android:layout_height="wrap_content"
@@ -57,7 +59,25 @@
                 android:id="@+id/total_stats_pie"
                 android:layout_width="match_parent"
                 android:layout_height="450dp"
+                android:layout_marginBottom="30dp"
                 android:layout_below="@+id/total_stats_title" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/total_stats_bar"
+                android:layout_below="@+id/total_stats_pie"
+                android:id="@+id/total_stats_bar_title"
+                />
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/total_bar_chart"
+                android:layout_width="match_parent"
+                android:layout_height="450dp"
+                android:padding="100dp"
+                android:layout_below="@id/total_stats_bar_title"
+                />
 
         </RelativeLayout>
 

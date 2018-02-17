@@ -4,13 +4,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -19,14 +22,12 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.helpers.DailyReportXAxisValueFormatter;
+import collado.fernando.todoapp.helpers.TotalReportXAxisValueFormatter;
 import collado.fernando.todoapp.models.Stat;
 
 /**
@@ -37,6 +38,7 @@ public class Stats extends AppCompatActivity{
 
     private LineChart lChart;
     private PieChart pChart;
+    private BarChart bChart;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -68,7 +70,7 @@ public class Stats extends AppCompatActivity{
 
         printLinearChart(entries, dates);
         printPieChart(getPieData(total, done));
-
+        printBarChart(total, done);
     }
 
     private PieData getPieData(int total, int done){
@@ -140,4 +142,42 @@ public class Stats extends AppCompatActivity{
         lChart.setData(lineData);
         lChart.invalidate(); // refresh
     }
+
+    private void printBarChart(int total, int done){
+        bChart = (BarChart) findViewById(R.id.total_bar_chart);
+        bChart.getDescription().setEnabled(false);
+
+        List<BarEntry> barEntries = new ArrayList<BarEntry>();
+
+        BarEntry barEntryTotal = new BarEntry(0, total, "Total");
+        BarEntry barEntryDone = new BarEntry(1, done,"Done");
+
+        barEntries.add(barEntryDone);
+        barEntries.add(barEntryTotal);
+
+        BarDataSet dataSet = new BarDataSet(barEntries, "");
+
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+
+        XAxis xAxis = bChart.getXAxis();
+        xAxis.setGranularity(1f);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(new TotalReportXAxisValueFormatter(new String[] { "Total", "Done" }));
+
+        YAxis leftAxis = bChart.getAxisLeft();
+        YAxis rightAxis = bChart.getAxisRight();
+        rightAxis.setEnabled(false);
+
+        leftAxis.setAxisMinimum(0f);
+
+        bChart.getLegend().setEnabled(false);
+
+        BarData barData = new BarData(dataSet);
+        barData.setValueTextSize(10f);
+        barData.setBarWidth(0.9f);
+
+        bChart.setData(barData);
+        bChart.invalidate();
+    }
+
 }
