@@ -74,4 +74,9 @@ public class Stat implements Parcelable {
     public String getDate() { return date; }
 
     public void setDate(String date) { this.date = date; }
+
+    @Override
+    public String toString() {
+        return "Stat, date: " + this.date + " total: " + this.total + " done: " + this.done;
+    }
 }

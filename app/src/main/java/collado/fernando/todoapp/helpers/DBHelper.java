@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ import collado.fernando.todoapp.models.Task;
  */
 
 public class DBHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 11;
 
     private static final String DATABASE_NAME = "tasks.db";
     private static final String TAG = DBHelper.class.getSimpleName().toString();
@@ -41,14 +42,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "total INTEGER," +
                 "done INTEGER," +
-                "date DATE";
+                "date DATE )";
         db.execSQL(CREATE_TASK_TABLE);
-
     }
     
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVer){
-        //this.deleteAllTasks(db);
-        //this.deleteAllStats(db);
+        this.deleteAllTasks(db);
+        this.deleteAllStats(db);
         this.onCreate(db);
     }
 
@@ -61,8 +61,9 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public void addTask(Task task){
-        
+
         SQLiteDatabase db = this.getWritableDatabase();
+
         ContentValues value = taskToContentValues(task);
         db.insert(task.TABLE, null, value);
         db.close();
@@ -84,7 +85,7 @@ public class DBHelper extends SQLiteOpenHelper {
                         null, // g. order by
                         null); // h. limit
 
-        if (cursor != null)
+        if (cursor != null  && cursor.getCount()>0)
             cursor.moveToFirst();
 
         Task task = cursorToTask(cursor);
@@ -238,18 +239,20 @@ public class DBHelper extends SQLiteOpenHelper {
         String query = "SELECT * FROM stats where date = ?";
         Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
 
-        if (cursor != null){ // If there is a stat for that day, get value, update, and store
+        Log.d("CURSOR", cursor.toString());
+
+        if (cursor != null  && cursor.getCount()>0){ // If there is a stat for that day, get value, update, and store
             cursor.moveToFirst();
             Stat oldStat = cursorToStat(cursor);
             int total,totalDone;
 
             if(option == 0){
-                total = oldStat.getDone() + 1;
-                totalDone = task.isDone() ? oldStat.getDone() + 1 : oldStat.getDone() - 1;
+                total = oldStat.getTotal() + 1;
+                totalDone = oldStat.getDone();
             }
             else{
-                total = oldStat.getDone() - 1;
-                totalDone = task.isDone() ? oldStat.getDone() + 1 : oldStat.getDone() - 1;
+                total = oldStat.getTotal() - 1;
+                totalDone = task.isDone() ? oldStat.getDone() -1 : oldStat.getDone();
             }
 
             oldStat.setDone(totalDone);
@@ -258,6 +261,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         else { // If there is no stat for that day, create value if adding task
             if(option == 0){
+                Log.d("UPDATE_STATS","no cursor, and option = 0");
                 Stat stat = new Stat(1, task.isDone() ? 1 : 0, task.getDate());
                 addStat(stat);
             }
@@ -275,10 +279,11 @@ public class DBHelper extends SQLiteOpenHelper {
         String query = "SELECT * FROM stats where date = ?";
         Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
 
-        if (cursor != null) {
+        if (cursor != null  && cursor.getCount()>0) {
             cursor.moveToFirst();
             Stat oldStat = cursorToStat(cursor);
-            int totalDone = previousState ? 1 : -1 + oldStat.getDone();
+            // If previousState was true (done), subtract 1 from the done tasks
+            int totalDone = previousState ? -1 : 1 + oldStat.getDone();
             oldStat.setDone(totalDone);
             updateStat(oldStat);
         }

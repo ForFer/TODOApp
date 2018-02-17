@@ -91,14 +91,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_analytics) {
-            return true;
-            /*
-            Intent stats = new Intent(this, Stats.class);
             ArrayList<Stat> allStats = db.getAllStats();
-            stats.putExtra("stats", allStats);
-            startActivity(stats);
+            Intent statsIntent = new Intent(this, Stats.class);
+            statsIntent.putExtra("stats", allStats);
+            startActivity(statsIntent);
             return true;
-            */
         }
 
         return super.onOptionsItemSelected(item);
