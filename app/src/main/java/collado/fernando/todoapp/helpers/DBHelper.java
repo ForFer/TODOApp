@@ -296,7 +296,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String date_query = "SELECT * FROM stats order by date DESC";
+        String date_query = "SELECT * FROM stats order by date ASC";
         Cursor cursor = db.rawQuery(date_query, null);
 
         if(cursor.moveToFirst()){
