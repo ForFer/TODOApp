@@ -184,11 +184,17 @@ public class Stats extends AppCompatActivity{
 
         BarChart bChart = (BarChart) findViewById(R.id.tag_bar_chart);
         bChart.getDescription().setEnabled(false);
+        bChart.getAxisLeft().setAxisMaximum(100);
+
 
         List<BarEntry> barEntries = new ArrayList<>();
-
+        int total = 0;
         for(int i=0; i<TAGS.length; i++){
-            int tagValue = Integer.parseInt(tags[i]);
+            total += Integer.parseInt(tags[i]);
+        }
+        for(int i=0; i<TAGS.length; i++){
+            float tagValue = (float)Integer.parseInt(tags[i])/total * 100;
+
             BarEntry barEntryTag = new BarEntry(i, tagValue, TAGS[i]);
             barEntries.add(barEntryTag);
         }
