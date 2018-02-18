@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -22,7 +23,7 @@ import collado.fernando.todoapp.models.Task;
  */
 
 public class DBHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 12;
 
     private static final String DATABASE_NAME = "tasks.db";
 
@@ -41,7 +42,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 "task TEXT," +
                 "done INTEGER," +
                 "date DATE," +
-                "timestamp INTEGER )";
+                "timestamp INTEGER," +
+                "tag TEXT )";
         db.execSQL(CREATE_TASK_TABLE);
 
         CREATE_TASK_TABLE = "CREATE TABLE IF NOT EXISTS stats ( " +
@@ -162,9 +164,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public Task cursorToTask(Cursor cursor){
         /**
          * Converts a Cursor to Task
-         * Column order --> id, task, done, date, timestamp
+         * Column order --> id, task, done, date, timestamp, tag
          */
-        Task task = new Task(cursor.getString(1), Long.parseLong(cursor.getString(4)), cursor.getString(3));
+        Task task = new Task(cursor.getString(1), Long.parseLong(cursor.getString(4)), cursor.getString(3), cursor.getString(5));
 
         task.setTaskId(Integer.parseInt(cursor.getString(0)));
         task.setDone(Integer.parseInt(cursor.getString(2)) == 1);
@@ -181,6 +183,7 @@ public class DBHelper extends SQLiteOpenHelper {
         value.put(task.KEY_DONE, task.isDone() == true ? 1 : 0);
         value.put(task.KEY__TIMESTAMP, task.get_timestamp());
         value.put(task.KEY_DATE, task.getDate());
+        value.put(task.KEY_TAG, task.getTag());
 
         return value;
     }

@@ -66,7 +66,19 @@ public class MySection extends StatelessSection {
         final DBHelper db = new DBHelper(itemHolder.taskName.getContext());
 
         itemHolder.taskName.setText(taskList.get(position).getName());
+        itemHolder.taskTag.setText(taskList.get(position).getTag());
         itemHolder.taskDone.setChecked(taskList.get(position).isDone());
+
+        itemHolder.taskDone.setOnClickListener(new CompoundButton.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                boolean done = itemHolder.taskDone.isChecked();
+                taskList.get(position).setDone(done);
+                db.updateTask(taskList.get(position), !done);
+            }
+
+        });
 
         itemHolder.removeBtn.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -98,7 +110,7 @@ public class MySection extends StatelessSection {
                 itemHolder.imgArrow.setImageResource(
                         expanded ? R.drawable.ic_keyboard_arrow_up_black_18dp : R.drawable.ic_keyboard_arrow_down_black_18dp
                 );
-                sectionedAdapter.notifyDataSetChanged();
+                updateView();
             }
         });
 
@@ -119,30 +131,18 @@ public class MySection extends StatelessSection {
 
     class MyItemViewHolder extends RecyclerView.ViewHolder {
         private final TextView taskName;
+        private final TextView taskTag;
         private final CheckBox taskDone;
         private final ImageView removeBtn;
 
         public MyItemViewHolder(View itemView){
             super(itemView);
 
-            final DBHelper db = new DBHelper(itemView.getContext());
-
             taskDone = (CheckBox)itemView.findViewById(R.id.cb);
             taskName = (TextView)itemView.findViewById(R.id.taskName);
+            taskTag =  (TextView) itemView.findViewById(R.id.taskTag);
             removeBtn = (ImageView) itemView.findViewById(R.id.deleteTask);
             removeBtn.setClickable(true);
-
-            taskDone.setOnClickListener(new CompoundButton.OnClickListener() {
-
-                @Override
-                public void onClick(View view) {
-                    int taskPosition = getAdapterPosition()-1;
-                    taskList.get(taskPosition).setDone(taskDone.isChecked());
-                    db.updateTask(taskList.get(taskPosition), !taskDone.isChecked());
-                }
-
-            });
-
         }
     }
 

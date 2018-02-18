@@ -15,19 +15,22 @@ public class Task {
     public static final String KEY_DATE = "date";
     public static final String KEY__TIMESTAMP = "timestamp";
     public static final String KEY_DONE = "done";
-    public static final String[] COLUMNS = {KEY_ID, KEY_NAME, KEY_DATE, KEY_DONE, KEY__TIMESTAMP};
+    public static final String KEY_TAG = "tag" ;
+    public static final String[] COLUMNS = {KEY_ID, KEY_NAME, KEY_DATE, KEY_DONE, KEY__TIMESTAMP, KEY_TAG};
 
     private int taskId;
     private String name;
     private boolean done;
     private long _timestamp;
     private String date;
+    private String tag;
 
-    public Task(String name, long _timestamp, String date){
+    public Task(String name, long _timestamp, String date, String tag){
         this.name = name;
         this.done = false;
         this._timestamp = _timestamp;
         this.date = date;
+        this.tag = tag;
     }
 
     public String getDate() { return date; }
@@ -50,9 +53,14 @@ public class Task {
 
     public void setDone(boolean done) { this.done = done; }
 
+    public String getTag() { return tag; }
+
+    public void setTag(String tag) { this.tag = tag; }
+
     @Override
     public String toString() {
-        return "Id:" + this.taskId + " Task:" + this.name +
-                " done: " + this.done + " date: " + this.date;
+        return "Id:" + this.taskId + ", Task:" + this.name +
+                ", done: " + this.done + ", date: " + this.date +
+                ", tag:" + this.tag;
     }
 }

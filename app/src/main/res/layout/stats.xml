@@ -73,13 +73,31 @@
                 android:id="@+id/total_bar_chart"
                 android:layout_width="match_parent"
                 android:layout_height="450dp"
+                android:minHeight="300dp"
                 android:layout_marginBottom="20dp"
                 android:layout_below="@id/total_stats_bar_title"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/tags_stats_bar"
+                android:layout_below="@+id/total_bar_chart"
+                android:id="@+id/tags_chart_title"
+                />
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/tag_bar_chart"
+                android:layout_width="match_parent"
+                android:layout_height="450dp"
+                android:minHeight="300dp"
+                android:layout_marginBottom="20dp"
+                android:layout_below="@id/tags_chart_title"
                 />
 
         </RelativeLayout>
 
     </LinearLayout>
-
 
 </ScrollView>

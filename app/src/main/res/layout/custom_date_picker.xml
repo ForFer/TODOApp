@@ -22,5 +22,12 @@
             android:id="@+id/add_task_dialog"
             />
 
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/add_tag"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            ></Spinner>
 
 </LinearLayout>

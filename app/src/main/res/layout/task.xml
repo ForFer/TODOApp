@@ -6,21 +6,44 @@
     android:layout_height="wrap_content"
     android:padding="10dp"
     >
-
-    <TextView
-        android:padding="10dp"
-        android:text="Gym"
-        android:layout_width="220dp"
+    <RelativeLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:textColor="#000"
-        android:id="@+id/taskName"
-        android:textSize="20dp"
-        />
+        android:id="@+id/taskTexts"
+        >
+
+        <TextView
+            android:id="@+id/taskName"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/taskTag"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/taskTag"
+            android:padding="5dp"
+            android:text="Gym"
+            android:textColor="#000"
+            android:textSize="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/taskName"
+            android:paddingLeft="10dp"
+            android:text="Gym"
+            android:layout_marginLeft="5dp"
+            android:textColor="#a0a0a0"
+            android:id="@+id/taskTag"
+            android:textSize="14dp"
+
+            />
+
+    </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:id="@+id/buttons"
+        >
 
         <ImageView
             android:layout_width="wrap_content"

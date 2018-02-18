@@ -1,9 +1,13 @@
 package collado.fernando.todoapp.activities;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -23,17 +27,24 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.helpers.StringXAxisValueFormatter;
 import collado.fernando.todoapp.models.Stat;
+import collado.fernando.todoapp.models.Task;
 
 /**
  * Created by Fernando on 11/02/18.
  */
 
 public class Stats extends AppCompatActivity{
+
+    private static final String[] TAGS = new String[]{"No tag", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,7 +78,11 @@ public class Stats extends AppCompatActivity{
 
         printLinearChart(entries, dates);
         printPieChart(getPieData(total, done));
-        printBarChart(total, done);
+        printTotalBarChart(total, done);
+
+        String  tags = getIntent().getStringExtra("tasks");
+
+        printByTagBarChart(tags.split(","));
     }
 
     private PieData getPieData(int total, int done){
@@ -147,7 +162,7 @@ public class Stats extends AppCompatActivity{
         lChart.invalidate(); // refresh
     }
 
-    private void printBarChart(int total, int done){
+    private void printTotalBarChart(int total, int done){
         /**
          * Handles BarChart creation and settings
          */
@@ -162,6 +177,27 @@ public class Stats extends AppCompatActivity{
         barEntries.add(barEntryDone);
         barEntries.add(barEntryTotal);
 
+        barChartFromData(bChart, barEntries, new String[] { "Total", "Done" });
+    }
+
+    private void printByTagBarChart(String[] tags){
+
+        BarChart bChart = (BarChart) findViewById(R.id.tag_bar_chart);
+        bChart.getDescription().setEnabled(false);
+
+        List<BarEntry> barEntries = new ArrayList<>();
+
+        for(int i=0; i<TAGS.length; i++){
+            int tagValue = Integer.parseInt(tags[i]);
+            BarEntry barEntryTag = new BarEntry(i, tagValue, TAGS[i]);
+            barEntries.add(barEntryTag);
+        }
+
+        barChartFromData(bChart, barEntries, TAGS);
+    }
+
+    private void barChartFromData(BarChart bChart, List<BarEntry> barEntries, String[] xAxisValues) {
+
         BarDataSet dataSet = new BarDataSet(barEntries, "");
 
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
@@ -169,7 +205,7 @@ public class Stats extends AppCompatActivity{
         XAxis xAxis = bChart.getXAxis();
         xAxis.setGranularity(1f);
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setValueFormatter(new StringXAxisValueFormatter(new String[] { "Total", "Done" }));
+        xAxis.setValueFormatter(new StringXAxisValueFormatter(xAxisValues));
 
         YAxis leftAxis = bChart.getAxisLeft();
         YAxis rightAxis = bChart.getAxisRight();

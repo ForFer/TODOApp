@@ -17,8 +17,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -27,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.adapters.MySection;
@@ -44,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<MySection> mySections = new ArrayList<>();
     private RecyclerView sectionHeader;
     private String _bannerDate;
+
+    private String[] TAGS = new String[]{"No tag", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
                 builder.show();
             }
         });
-
 
         this.setLinearLayoutManager();
         this.setBanner(getDate());
@@ -90,11 +94,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_analytics) {
-            ArrayList<Stat> allStats = db.getAllStats();
-            Intent statsIntent = new Intent(this, Stats.class);
-            statsIntent.putExtra("stats", allStats);
-            startActivity(statsIntent);
-            return true;
+            return ShowAnalytics();
         }
 
         return super.onOptionsItemSelected(item);
@@ -103,19 +103,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
         updateBanner();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
         updateBanner();
-
     }
 
     protected void updateBanner(){
+        /**
+         * Check if banner has to be updated and do so
+         */
         String[] date = getDate();
         if(!(_bannerDate.equals(date[1]))){
             setBanner(date);
@@ -235,6 +235,11 @@ public class MainActivity extends AppCompatActivity {
         View alertLayout = inflater.inflate(R.layout.custom_date_picker, null);
         final EditText input = alertLayout.findViewById(R.id.add_task_dialog);
         final DatePicker datePicker = alertLayout.findViewById(R.id.date_picker_dialog);
+        final Spinner dropdown = alertLayout.findViewById(R.id.add_tag);
+
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, TAGS);
+        dropdown.setAdapter(adapter);
 
         builder.setView(alertLayout);
         builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
@@ -251,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
                 String current_date = String.valueOf(year) + "-" + str_month + "-" +  str_day ;
                 long timestamp = System.currentTimeMillis();
 
-                Task newTask = new Task(name, timestamp, current_date);
+                Task newTask = new Task(name, timestamp, current_date, dropdown.getSelectedItem().toString());
                 db.addTask(newTask);
 
                 setAdapterView();
@@ -270,6 +275,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setAdapterView(){
+        /**
+         * Handles setting the data for SectionedRecyclerViewAdapter
+         */
         SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
         tasks_by_day = db.getAllTasks();
         mySections = new ArrayList<>();
@@ -280,8 +288,48 @@ public class MainActivity extends AppCompatActivity {
             sectionAdapter.addSection(section);
             mySections.add(section);
         }
+
         sectionHeader.setAdapter(sectionAdapter);
     }
 
+    private boolean ShowAnalytics() {
+        /**
+         * Get all necessary data for showing analytics and
+         * starts Stats activity
+         */
+        ArrayList<Stat> allStats = db.getAllStats();
+        Intent statsIntent = new Intent(this, Stats.class);
+        statsIntent.putExtra("stats", allStats);
+        int []tags = new int[TAGS.length];
+        tasks_by_day = db.getAllTasks();
+        for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
+            ArrayList<Task> tasks = entry.getValue();
+            for(Task task : tasks){
+                int index = getIndexFromTag(task.getTag());
+                if (index > 0) tags[index] += 1;
+            }
+        }
 
+        int i, arrLen = tags.length;
+        StringBuilder tmp = new StringBuilder();
+        for (i=0; i<arrLen-1; i++)
+            tmp.append(tags[i] +",");
+        tmp.append(tags[arrLen-1]);
+
+        statsIntent.putExtra("tasks", tmp.toString());
+        startActivity(statsIntent);
+        return true;
+    }
+
+    private int getIndexFromTag(String tag){
+        /**
+         * Get index of Tag from the TAGS String array
+         */
+        for (int i=0;i<TAGS.length;i++) {
+            if (TAGS[i].equals(tag)) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }
