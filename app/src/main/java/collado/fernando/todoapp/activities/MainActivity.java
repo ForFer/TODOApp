@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         _date[0] = sdf.format(d);
 
         long date = System.currentTimeMillis();
-        sdf = new SimpleDateFormat("dd/MM/yyy");
+        sdf = new SimpleDateFormat("dd/MM/yyyy");
         _date[1] = sdf.format(date);
 
         return _date;
@@ -167,30 +167,39 @@ public class MainActivity extends AppCompatActivity {
         calendar.set(Calendar.SECOND, 00);
 
         String big_text = "Remember to set your tasks for the next day";
-        setNotification(big_text,"","", calendar);
+        setNotification(big_text,"","", "1",calendar);
 
-        calendar.set(Calendar.HOUR_OF_DAY, 17);
-        calendar.set(Calendar.MINUTE, 30);
-        calendar.set(Calendar.SECOND, 00);
+        /*
+        calendar.set(Calendar.HOUR_OF_DAY, 13);
+
+        calendar.set(Calendar.MINUTE, 04);
+        calendar.set(Calendar.SECOND, 40);
         big_text = "Time to get stuff done!";
-        setNotification(big_text,"","", calendar);
-
+        int undoneTasks = db.getTodayUndoneTasks();
+        String big_content_title = "You have " + undoneTasks + " tasks to do today";
+        setNotification(big_text,"","", "2", calendar);
+        */
     }
 
-    private void setNotification(String big_text, String big_content_title, String summary_text, Calendar calendar) {
+    private void setNotification(String big_text, String big_content_title, String summary_text, String channel_id, Calendar calendar) {
         /**
          * Set daily notifications
          */
+        //TODO: FIX putExtra -> values not being received at AlarmReceiver
 
-        Intent notificationIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+        Intent notificationIntent = new Intent(this, AlarmReceiver.class);
         notificationIntent.putExtra("BIG_CONTENT_TITLE", big_content_title);
         notificationIntent.putExtra("BIG_TEXT", big_text);
         notificationIntent.putExtra("SUMMARY_TEXT", summary_text);
+        notificationIntent.putExtra("CHANNEL_ID", channel_id);
 
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,notificationIntent,
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this,
+                Integer.parseInt(channel_id),
+                notificationIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager am = (AlarmManager) MainActivity.this.getSystemService(MainActivity.this.ALARM_SERVICE);
+
+        AlarmManager am = (AlarmManager) this.getSystemService(this.ALARM_SERVICE);
         am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
 
     }
