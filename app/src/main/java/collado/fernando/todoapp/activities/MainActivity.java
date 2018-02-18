@@ -3,9 +3,7 @@ package collado.fernando.todoapp.activities;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.Notification;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,8 +30,8 @@ import java.util.Map;
 
 import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.adapters.MySection;
+import collado.fernando.todoapp.helpers.AlarmReceiver;
 import collado.fernando.todoapp.helpers.DBHelper;
-import collado.fernando.todoapp.helpers.NotificationPublisher;
 import collado.fernando.todoapp.models.Stat;
 import collado.fernando.todoapp.models.Task;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.setLinearLayoutManager();
         this.setBanner(getDate());
-        //this.setNotification(getNotification("x TODOS to do today", "TODO"), (int)System.currentTimeMillis());
+        this.setNotifications();
     }
 
     @Override
@@ -153,34 +151,48 @@ public class MainActivity extends AppCompatActivity {
         return _date;
     }
 
-    private void setNotification(Notification notification, int notification_id) {
+    private void setNotifications(){
         /**
-         * Set daily notifications (WiP)
+         * Set daily notifications
+         * TODO: Change according to settings
+         * Current behaviour: 2 daily notifications:
+         *   - One at night to remind me to set my tasks for the next day
+         *   - The other one ~ 5pm, to remind me to check the app and do stuff
          */
-        Intent myIntent = new Intent(this , NotificationPublisher.class);
-        myIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notification_id);
-        myIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 15);
-        calendar.set(Calendar.MINUTE, 20);
+        calendar.set(Calendar.HOUR_OF_DAY, 22);
+        calendar.set(Calendar.MINUTE, 30);
         calendar.set(Calendar.SECOND, 00);
 
+        String big_text = "Remember to set your tasks for the next day";
+        setNotification(big_text,"","", calendar);
 
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 24*60*60*1000 , pendingIntent);
-        //alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+5000, pendingIntent);
+        calendar.set(Calendar.HOUR_OF_DAY, 17);
+        calendar.set(Calendar.MINUTE, 30);
+        calendar.set(Calendar.SECOND, 00);
+        big_text = "Time to get stuff done!";
+        setNotification(big_text,"","", calendar);
 
     }
 
+    private void setNotification(String big_text, String big_content_title, String summary_text, Calendar calendar) {
+        /**
+         * Set daily notifications
+         */
 
-    private Notification getNotification(String content, String title){
-        Notification.Builder builder = new Notification.Builder(this)
-                    .setContentTitle(title)
-                    .setContentText(content);
-        builder.setSmallIcon(R.drawable.ic_small_clipboard);
-        return builder.build();
+        Intent notificationIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+        notificationIntent.putExtra("BIG_CONTENT_TITLE", big_content_title);
+        notificationIntent.putExtra("BIG_TEXT", big_text);
+        notificationIntent.putExtra("SUMMARY_TEXT", summary_text);
+
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager am = (AlarmManager) MainActivity.this.getSystemService(MainActivity.this.ALARM_SERVICE);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+
     }
 
     private void setLinearLayoutManager(){

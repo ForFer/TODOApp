@@ -28,7 +28,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MainActivity" />
         </activity>
-        <receiver android:process=":remote" android:name=".helpers.NotificationPublisher" />
+        <receiver android:name=".helpers.AlarmReceiver"/>
     </application>
 
 </manifest>
