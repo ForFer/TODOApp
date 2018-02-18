@@ -134,6 +134,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public int updateTask(Task task, boolean previousState){
 
+        Log.d("UpdateTASK", task.toString());
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues value = taskToContentValues(task);
         int i = db.update(Task.TABLE,
@@ -222,6 +224,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public int updateStat(Stat stat){
 
+        Log.d("UPDATING STAAAAAAT", stat.toString());
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues value = statToContentValues(stat);
         int i = db.update(Stat.TABLE,
@@ -280,6 +284,8 @@ public class DBHelper extends SQLiteOpenHelper {
          *
          */
 
+
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         String query = "SELECT * FROM stats where date = ?";
@@ -288,9 +294,17 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor != null  && cursor.getCount() > 0) {
             cursor.moveToFirst();
             Stat oldStat = cursorToStat(cursor);
+            Log.d("UPDATESTATS BEFOERE", oldStat.toString());
             // If previousState was true (done), subtract 1 from the done tasks
-            int totalDone = previousState ? -1 : 1 + oldStat.getDone();
-            oldStat.setDone(totalDone);
+            if(previousState){
+                int totalDone = oldStat.getDone() - 1;
+                if(totalDone < 0) oldStat.setDone(0);
+                else oldStat.setDone(totalDone);
+            }
+            else{
+                oldStat.setDone(oldStat.getDone() + 1);
+            }
+            Log.d("UPDATESTATS after", oldStat.toString());
             updateStat(oldStat);
         }
 
@@ -318,6 +332,7 @@ public class DBHelper extends SQLiteOpenHelper {
             Stat stat;
             do {
                 stat = cursorToStat(cursor);
+                Log.d("STAAAAAAAAAAAAAT", stat.toString());
                 try {
                     Date date = format.parse(stat.getDate());
                     if(today.compareTo(date) >= 0 && stat.getTotal() > 0) stats.add(stat);
@@ -329,6 +344,32 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return stats;
 
+    }
+
+    public int getTodayUndoneTasks(){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Date today = new Date();
+        int day = today.getDay();
+        int month = today.getMonth();
+        int year = today.getYear();
+
+        String str_day = day<=9?"0"+String.valueOf(day):String.valueOf(day);
+        String str_month = month<=9?"0"+String.valueOf(month):String.valueOf(month);
+        String current_date = String.valueOf(year) + "-" + str_month + "-" +  str_day ;
+
+        String query = "SELECT * FROM stats where date = ?";
+        Cursor cursor = db.rawQuery(query, new String[] { current_date });
+
+        Stat stat = new Stat(0,0,current_date);
+        if(cursor.moveToNext()){
+            stat = cursorToStat(cursor);
+        }
+
+        db.close();
+
+        return stat.getUndone();
     }
 
 }

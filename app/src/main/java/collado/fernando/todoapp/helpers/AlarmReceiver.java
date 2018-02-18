@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -26,12 +27,12 @@ import collado.fernando.todoapp.activities.MainActivity;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
-    private static String BIG_CONTENT_TITLE = "";
-    private static String BIG_TEXT          = "";
-    private static String SUMMARY_TEXT      = "";
+    private static String BIG_CONTENT_TITLE       = "Remember to set your tasks for the next day";
+    private static String BIG_TEXT                = "";
+    private static String SUMMARY_TEXT            = "";
     private static final String CONTENT_TITLE     = "TODO App notification";
     private static final String CONTENT_TEXT      = "Remember TODO stuff ;)";
-    private static final String CHANNEL_ID        = "notify_001";
+    private static String CHANNEL_ID              = "1";
     private static final String CHANNEL_NAME      = "Channel human readable title";
 
     @Override
@@ -40,15 +41,17 @@ public class AlarmReceiver extends BroadcastReceiver {
         Intent notificationIntent = new Intent(context, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        Bundle extras = notificationIntent.getExtras();
-        BIG_CONTENT_TITLE = extras.getString("BIG_CONTENT_TITLE");
-        BIG_TEXT = extras.getString("BIG_TEXT");
-        SUMMARY_TEXT = extras.getString("SUMMARY_TEXT");
+        /*
+        BIG_CONTENT_TITLE = notificationIntent.getStringExtra("BIG_CONTENT_TITLE");
+        BIG_TEXT = notificationIntent.getStringExtra("BIG_TEXT");
+        SUMMARY_TEXT = notificationIntent.getStringExtra("SUMMARY_TEXT");
+        CHANNEL_ID = notificationIntent.getStringExtra("CHANNEL_ID");
+        */
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context.getApplicationContext(), CHANNEL_ID);
         Intent ii = new Intent(context.getApplicationContext(), MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, ii, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, Integer.parseInt(CHANNEL_ID), ii, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
         bigText.bigText(BIG_TEXT);

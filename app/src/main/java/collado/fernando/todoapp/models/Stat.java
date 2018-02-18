@@ -79,4 +79,6 @@ public class Stat implements Parcelable {
     public String toString() {
         return "Stat, date: " + this.date + " total: " + this.total + " done: " + this.done;
     }
+
+    public int getUndone() { return this.total - this.done; }
 }

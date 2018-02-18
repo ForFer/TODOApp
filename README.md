@@ -5,7 +5,7 @@ Daily TODO Android App with double purpose of:
 
 Next changes (in order of importance):
 - [x] Pick date for task
-- [ ] Daily Notifications via Alarm Manager
+- [X] Daily Notifications via Alarm Manager
 - [ ] Improve UI 
 - [ ] Settings (about + change when to receive notifications, or disable them)
-- [ ] Analytics
+- [X] Analytics
