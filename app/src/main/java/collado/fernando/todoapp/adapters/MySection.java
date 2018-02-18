@@ -68,13 +68,6 @@ public class MySection extends StatelessSection {
         itemHolder.taskName.setText(taskList.get(position).getName());
         itemHolder.taskDone.setChecked(taskList.get(position).isDone());
 
-        itemHolder.taskDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                taskList.get(position).setDone(b);
-                db.updateTask(taskList.get(position), !b);
-            }
-        });
         itemHolder.removeBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
@@ -131,10 +124,25 @@ public class MySection extends StatelessSection {
 
         public MyItemViewHolder(View itemView){
             super(itemView);
+
+            final DBHelper db = new DBHelper(itemView.getContext());
+
             taskDone = (CheckBox)itemView.findViewById(R.id.cb);
             taskName = (TextView)itemView.findViewById(R.id.taskName);
             removeBtn = (ImageView) itemView.findViewById(R.id.deleteTask);
             removeBtn.setClickable(true);
+
+            taskDone.setOnClickListener(new CompoundButton.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    int taskPosition = getAdapterPosition()-1;
+                    taskList.get(taskPosition).setDone(taskDone.isChecked());
+                    db.updateTask(taskList.get(taskPosition), !taskDone.isChecked());
+                }
+
+            });
+
         }
     }
 

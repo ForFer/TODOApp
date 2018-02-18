@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -76,7 +75,6 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
 
         updateStats(task, 0);
-
     }
 
     public Task getTask(int id){
@@ -133,8 +131,6 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public int updateTask(Task task, boolean previousState){
-
-        Log.d("UpdateTASK", task.toString());
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues value = taskToContentValues(task);
@@ -224,8 +220,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public int updateStat(Stat stat){
 
-        Log.d("UPDATING STAAAAAAT", stat.toString());
-
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues value = statToContentValues(stat);
         int i = db.update(Stat.TABLE,
@@ -238,8 +232,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return i;
     }
-
-
 
     public void updateStats(Task task, int option){
         /**
@@ -280,11 +272,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void updateStats(Task task, int option, boolean previousState){
         /**
-         * case for when a task is being updated (from undone to done, and vice versa)
+         * When a task is being updated (from undone to done, and vice versa)
          *
          */
-
-
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -294,7 +284,6 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor != null  && cursor.getCount() > 0) {
             cursor.moveToFirst();
             Stat oldStat = cursorToStat(cursor);
-            Log.d("UPDATESTATS BEFOERE", oldStat.toString());
             // If previousState was true (done), subtract 1 from the done tasks
             if(previousState){
                 int totalDone = oldStat.getDone() - 1;
@@ -304,10 +293,8 @@ public class DBHelper extends SQLiteOpenHelper {
             else{
                 oldStat.setDone(oldStat.getDone() + 1);
             }
-            Log.d("UPDATESTATS after", oldStat.toString());
             updateStat(oldStat);
         }
-
     }
 
     public ArrayList<Stat> getAllStats(){
@@ -332,7 +319,6 @@ public class DBHelper extends SQLiteOpenHelper {
             Stat stat;
             do {
                 stat = cursorToStat(cursor);
-                Log.d("STAAAAAAAAAAAAAT", stat.toString());
                 try {
                     Date date = format.parse(stat.getDate());
                     if(today.compareTo(date) >= 0 && stat.getTotal() > 0) stats.add(stat);
@@ -347,6 +333,9 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public int getTodayUndoneTasks(){
+        /**
+         * Get all undone tasks filtered by today's date
+         */
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -371,5 +360,4 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return stat.getUndone();
     }
-
 }
