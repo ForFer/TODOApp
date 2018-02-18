@@ -26,8 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import collado.fernando.todoapp.R;
-import collado.fernando.todoapp.helpers.DailyReportXAxisValueFormatter;
-import collado.fernando.todoapp.helpers.TotalReportXAxisValueFormatter;
+import collado.fernando.todoapp.helpers.StringXAxisValueFormatter;
 import collado.fernando.todoapp.models.Stat;
 
 /**
@@ -35,10 +34,6 @@ import collado.fernando.todoapp.models.Stat;
  */
 
 public class Stats extends AppCompatActivity{
-
-    private LineChart lChart;
-    private PieChart pChart;
-    private BarChart bChart;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,7 +43,7 @@ public class Stats extends AppCompatActivity{
         Intent intent = getIntent();
         ArrayList<Stat> stats = intent.getParcelableArrayListExtra("stats");
 
-        List<Entry> entries = new ArrayList<Entry>();
+        List<Entry> entries = new ArrayList<>();
 
         String[] dates = new String[stats.size()];
         int i = 0;
@@ -59,7 +54,9 @@ public class Stats extends AppCompatActivity{
         for(Stat stat : stats){
             Float relative = ( (float) stat.getDone() / stat.getTotal()) * 100;
 
-            dates[i] = stat.getDate();
+            String date = stat.getDate();
+            dates[i] = date.substring(8,10) + "-" + date.substring(5,7) + "-" + date.substring(0,4);
+
             total += stat.getTotal();
             done += stat.getDone();
 
@@ -74,8 +71,10 @@ public class Stats extends AppCompatActivity{
     }
 
     private PieData getPieData(int total, int done){
-
-        List<PieEntry> pieEntries = new ArrayList<PieEntry>();
+        /**
+         * Create PieData from total and done tasks
+         */
+        List<PieEntry> pieEntries = new ArrayList<>();
 
         PieEntry pieEntryDone = new PieEntry(done, "Tasks done");
         PieEntry pieEntryTotal = new PieEntry(total-done, "Tasks not done");
@@ -92,7 +91,10 @@ public class Stats extends AppCompatActivity{
     }
 
     private void printPieChart(PieData pieData){
-        pChart = (PieChart) findViewById(R.id.total_stats_pie);
+        /**
+         * Handles PieChart creation and settings
+         */
+        PieChart pChart = (PieChart) findViewById(R.id.total_stats_pie);
         pChart.setUsePercentValues(true);
         pChart.getDescription().setEnabled(false);
         pChart.setHoleRadius(58f);
@@ -114,9 +116,11 @@ public class Stats extends AppCompatActivity{
     }
 
     private void printLinearChart(List<Entry> entries,  String[] dates){
-        lChart = (LineChart) findViewById(R.id.daily_stats_chart);
+        /**
+         * Handles LinearChart creation and settings
+         */
+        LineChart lChart = (LineChart) findViewById(R.id.daily_stats_chart);
         lChart.getDescription().setEnabled(false);
-        //LimitLine llXAxis = new LimitLine();
 
         XAxis xAxis = lChart.getXAxis();
         xAxis.setLabelRotationAngle(290f);
@@ -135,7 +139,7 @@ public class Stats extends AppCompatActivity{
         legend.setPosition(Legend.LegendPosition.ABOVE_CHART_CENTER);
         legend.setForm(Legend.LegendForm.CIRCLE);
 
-        xAxis.setValueFormatter(new DailyReportXAxisValueFormatter(dates));
+        xAxis.setValueFormatter(new StringXAxisValueFormatter(dates));
 
         LineDataSet dataSet = new LineDataSet(entries, "Percentage of tasks done per day");
         LineData lineData = new LineData(dataSet);
@@ -144,10 +148,13 @@ public class Stats extends AppCompatActivity{
     }
 
     private void printBarChart(int total, int done){
-        bChart = (BarChart) findViewById(R.id.total_bar_chart);
+        /**
+         * Handles BarChart creation and settings
+         */
+        BarChart bChart = (BarChart) findViewById(R.id.total_bar_chart);
         bChart.getDescription().setEnabled(false);
 
-        List<BarEntry> barEntries = new ArrayList<BarEntry>();
+        List<BarEntry> barEntries = new ArrayList<>();
 
         BarEntry barEntryTotal = new BarEntry(0, total, "Total");
         BarEntry barEntryDone = new BarEntry(1, done,"Done");
@@ -162,7 +169,7 @@ public class Stats extends AppCompatActivity{
         XAxis xAxis = bChart.getXAxis();
         xAxis.setGranularity(1f);
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setValueFormatter(new TotalReportXAxisValueFormatter(new String[] { "Total", "Done" }));
+        xAxis.setValueFormatter(new StringXAxisValueFormatter(new String[] { "Total", "Done" }));
 
         YAxis leftAxis = bChart.getAxisLeft();
         YAxis rightAxis = bChart.getAxisRight();

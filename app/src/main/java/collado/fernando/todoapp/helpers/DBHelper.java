@@ -26,9 +26,10 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 11;
 
     private static final String DATABASE_NAME = "tasks.db";
-    private static final String TAG = DBHelper.class.getSimpleName().toString();
 
     private static final String STATS_QUERY_LIMIT = "30";
+    private static final String TASKS_QUERY_LIMIT = "30";
+
 
     public DBHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -108,7 +109,7 @@ public class DBHelper extends SQLiteOpenHelper {
         LinkedHashMap<String, ArrayList<Task>> tasks_by_day = new LinkedHashMap<>();
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String date_query = "SELECT date FROM tasks group by date order by date DESC";
+        String date_query = "SELECT date FROM tasks group by date order by date DESC LIMIT " + TASKS_QUERY_LIMIT;
         Cursor cursor = db.rawQuery(date_query, null);
 
         if(cursor.moveToFirst()){
@@ -162,6 +163,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public Task cursorToTask(Cursor cursor){
         /**
+         * Converts a Cursor to Task
          * Column order --> id, task, done, date, timestamp
          */
         Task task = new Task(cursor.getString(1), Long.parseLong(cursor.getString(4)), cursor.getString(3));
@@ -188,6 +190,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public Stat cursorToStat(Cursor cursor){
         /**
+         * Converts a Cursor to Stat
          * Column order --> id, total, done, date
          */
         Stat stat = new Stat(Integer.parseInt(cursor.getString(1)), Integer.parseInt(cursor.getString(2)), cursor.getString(3));
@@ -245,9 +248,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String query = "SELECT * FROM stats where date = ?";
         Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
 
-        Log.d("CURSOR", cursor.toString());
-
-        if (cursor != null  && cursor.getCount()>0){ // If there is a stat for that day, get value, update, and store
+        if (cursor != null  && cursor.getCount() > 0){ // If there is a stat for that day, get value, update, and store
             cursor.moveToFirst();
             Stat oldStat = cursorToStat(cursor);
             int total,totalDone;
@@ -267,7 +268,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         else { // If there is no stat for that day, create value if adding task
             if(option == 0){
-                Log.d("UPDATE_STATS","no cursor, and option = 0");
                 Stat stat = new Stat(1, task.isDone() ? 1 : 0, task.getDate());
                 addStat(stat);
             }
@@ -285,7 +285,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String query = "SELECT * FROM stats where date = ?";
         Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
 
-        if (cursor != null  && cursor.getCount()>0) {
+        if (cursor != null  && cursor.getCount() > 0) {
             cursor.moveToFirst();
             Stat oldStat = cursorToStat(cursor);
             // If previousState was true (done), subtract 1 from the done tasks
@@ -298,7 +298,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public ArrayList<Stat> getAllStats(){
         /**
-         * Get all stats prior to today
+         * Get all stats up to STATS_QUERY_LIMIT number,
+         * that fulfill the following two conditions
+         *   - Has to be before today
+         *   - Has to have at least 1 task in the "total" field
          */
 
         ArrayList<Stat> stats = new ArrayList<>();
@@ -317,9 +320,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 stat = cursorToStat(cursor);
                 try {
                     Date date = format.parse(stat.getDate());
-                    Log.d("COMPARISON", Integer.toString(today.compareTo(date)));
-                    Log.d("dates", date.toString());
-                    if(today.compareTo(date) >= 0) stats.add(stat);
+                    if(today.compareTo(date) >= 0 && stat.getTotal() > 0) stats.add(stat);
                 }
                 catch (ParseException e){
                     // Nothing
