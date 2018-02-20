@@ -61,7 +61,7 @@
             android:layout_alignParentTop="true"
             android:layout_toLeftOf="@+id/cb"
             android:layout_toStartOf="@+id/cb"
-            android:src="@drawable/deleticon" />
+            android:src="@drawable/ic_delete_forever_black_48dp" />
 
         <CheckBox
             android:button="@drawable/cb_selector"
