@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView sectionHeader;
     private String _bannerDate;
 
-    private String[] TAGS = new String[]{"No tag", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
+    private String[] TAGS = new String[]{"No tag", "Personal", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
 
         for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
             String section_d = entry.getKey();
-            MySection section = new MySection(section_d,entry.getValue(), sectionAdapter);
+            MySection section = new MySection(section_d,entry.getValue(), sectionAdapter, this, TAGS);
             sectionAdapter.addSection(section);
             mySections.add(section);
         }
@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<Task> tasks = entry.getValue();
             for(Task task : tasks){
                 int index = getIndexFromTag(task.getTag());
-                if (index > 0) tags[index] += 1;
+                if (index > -1) tags[index] += 1;
             }
         }
 

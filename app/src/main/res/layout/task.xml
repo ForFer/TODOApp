@@ -14,7 +14,7 @@
 
         <TextView
             android:id="@+id/taskName"
-            android:layout_width="220dp"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/taskTag"
             android:layout_alignParentTop="true"
@@ -46,13 +46,22 @@
         >
 
         <ImageView
+            android:id="@+id/editTask"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/deleticon"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="60dp"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/deleteTask"
+            android:layout_toStartOf="@+id/deleteTask"
+            android:src="@drawable/ic_mode_edit_black_24dp" />
+
+        <ImageView
             android:id="@+id/deleteTask"
-            />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/cb"
+            android:layout_toStartOf="@+id/cb"
+            android:src="@drawable/deleticon" />
 
         <CheckBox
             android:button="@drawable/cb_selector"
