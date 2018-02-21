@@ -6,7 +6,9 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -47,13 +49,17 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<MySection> mySections = new ArrayList<>();
     private RecyclerView sectionHeader;
     private String _bannerDate;
+    SharedPreferences preferences;
 
     private String[] TAGS = new String[]{"No tag", "Personal", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
+    private String NIGHT_NOTIFICATION_TEXT = "Remember to set your tasks for the next day";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -90,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
@@ -160,25 +168,49 @@ public class MainActivity extends AppCompatActivity {
          *   - The other one ~ 5pm, to remind me to check the app and do stuff
          */
 
+        boolean notif1 = preferences.getBoolean("switch_notif_1", true);
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 22);
-        calendar.set(Calendar.MINUTE, 30);
-        calendar.set(Calendar.SECOND, 00);
+        if(notif1){
 
-        String big_text = "Remember to set your tasks for the next day";
-        setNotification(big_text,"","", "1",calendar);
+            String[] date = preferences.getString("notification_time_1", "22:30:00").split(":");
+            int[] _date = {0,0,0};
 
-        /*
-        calendar.set(Calendar.HOUR_OF_DAY, 13);
+            for(int i=0; i<3; i++){
+                if(date.length > i) { _date[i] = Integer.parseInt(date[i]); }
+            }
 
-        calendar.set(Calendar.MINUTE, 04);
-        calendar.set(Calendar.SECOND, 40);
-        big_text = "Time to get stuff done!";
-        int undoneTasks = db.getTodayUndoneTasks();
-        String big_content_title = "You have " + undoneTasks + " tasks to do today";
-        setNotification(big_text,"","", "2", calendar);
-        */
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, _date[0]);
+            calendar.set(Calendar.MINUTE, _date[1]);
+            calendar.set(Calendar.SECOND, _date[2]);
+
+            String big_text = NIGHT_NOTIFICATION_TEXT ;
+            setNotification(big_text,"","", "1",calendar);
+
+        }
+
+        boolean notif2 = preferences.getBoolean("switch_notif_2", true);
+
+        if(notif2) {
+
+            String[] date = preferences.getString("notification_time_2", "17:30:00").split(":");
+            int[] _date = {0, 0, 0};
+
+            for (int i = 0; i < 3; i++) {
+                if (_date.length >= i) _date[i] = Integer.parseInt(date[i]);
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, _date[0]);
+            calendar.set(Calendar.MINUTE, _date[1]);
+            calendar.set(Calendar.SECOND, _date[2]);
+
+            String big_text = "Time to get stuff done!";
+            int undoneTasks = db.getTodayUndoneTasks();
+            String big_content_title = "You have " + undoneTasks + " tasks to do today";
+            setNotification(big_text,big_content_title,"", "2", calendar);
+        }
+
     }
 
     private void setNotification(String big_text, String big_content_title, String summary_text, String channel_id, Calendar calendar) {
@@ -199,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                 notificationIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
-        AlarmManager am = (AlarmManager) this.getSystemService(this.ALARM_SERVICE);
+        AlarmManager am = (AlarmManager) this.getSystemService(MainActivity.ALARM_SERVICE);
         am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
 
     }

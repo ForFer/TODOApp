@@ -90,7 +90,6 @@ public class MySection extends StatelessSection {
             @Override
             public void onClick(View view) {
             final Task task = taskList.get(position);
-            Log.d("TASK DATE", task.getDate());
                 AlertDialog.Builder builder = new AlertDialog.Builder(mainContext);
                 builder.setTitle("Edit TODO");
 

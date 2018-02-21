@@ -6,4 +6,14 @@
     <string name="total_stats">Total relative stats </string>
     <string name="total_stats_bar">Total absolute stats </string>
     <string name="tags_stats_bar">Percentage tasks by tag </string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="switch_notif_1">Night notification</string>
+    <string name="switch_notif_2">Evening notification</string>
+
 </resources>

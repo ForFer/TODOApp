@@ -1,0 +1,34 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- A 'parent' preference, which enables/disables child preferences (below)
+         when checked/unchecked. -->
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="switch_notif_1"
+        android:title="@string/switch_notif_1"
+        android:id="@+id/switch_notif_1"
+        />
+
+    <collado.fernando.todoapp.fragments.TimePreference
+        android:key="notification_time_1"
+        android:title="Time for the notification"
+        android:dependency="switch_notif_1"
+        />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="switch_notif_2"
+        android:title="@string/switch_notif_2"
+        android:id="@+id/switch_notif_2"
+        />
+
+    <collado.fernando.todoapp.fragments.TimePreference
+        android:key="notification_time_1"
+        android:title="Time for the notification"
+        android:dependency="switch_notif_2"
+        />
+
+
+
+
+</PreferenceScreen>
