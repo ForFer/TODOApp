@@ -6,8 +6,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="#e6e6e6"
+        android:background="#bbdefb"
         android:orientation="horizontal"
+        
         >
         <TextView
             android:layout_width="0dp"

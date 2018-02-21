@@ -311,12 +311,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         int i, arrLen = tags.length;
-        StringBuilder tmp = new StringBuilder();
-        for (i=0; i<arrLen-1; i++)
-            tmp.append(tags[i] +",");
-        tmp.append(tags[arrLen-1]);
+        StringBuilder taskByTag = new StringBuilder();
+        StringBuilder tagNames = new StringBuilder();
+        for (i=0; i<arrLen-1; i++){
+            taskByTag.append(tags[i] +",");
+            tagNames.append(TAGS[i] +",");
 
-        statsIntent.putExtra("tasks", tmp.toString());
+        }
+
+        taskByTag.append(tags[arrLen-1]);
+        tagNames.append(TAGS[arrLen-1]);
+
+        statsIntent.putExtra("tasks", taskByTag.toString());
+        statsIntent.putExtra("TAGS", tagNames.toString());
         startActivity(statsIntent);
         return true;
     }

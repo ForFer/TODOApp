@@ -30,21 +30,24 @@
             android:layout_height="wrap_content"
             android:text="Monday"
             android:textSize="25dp"
-            android:layout_marginLeft="60dp"
+            android:layout_marginLeft="65dp"
             android:layout_marginTop="80dp"
             android:id="@+id/bannerDay"
             />
 
         <TextView
+            android:id="@+id/bannerDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Monday"
-            android:textColor="#000"
-            android:textSize="25dp"
-            android:layout_marginLeft="165dp"
             android:layout_alignBaseline="@+id/bannerDay"
-            android:id="@+id/bannerDate"
-            />
+            android:layout_alignBottom="@+id/bannerDay"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@+id/bannerDay"
+            android:layout_toRightOf="@+id/bannerDay"
+            android:text="21/02/2018"
+            android:textColor="#000"
+            android:textSize="25dp" />
 
     </RelativeLayout>
 

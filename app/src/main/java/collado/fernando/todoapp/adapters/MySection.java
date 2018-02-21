@@ -177,7 +177,7 @@ public class MySection extends StatelessSection {
         final HeaderViewHolder itemHolder = (HeaderViewHolder) holder;
         itemHolder.section_date.setText(section_date);
         itemHolder.imgArrow.setImageResource(
-                expanded ? R.drawable.ic_keyboard_arrow_up_black_18dp : R.drawable.ic_keyboard_arrow_down_black_18dp
+                expanded ? R.drawable.ic_keyboard_arrow_up_black_48dp : R.drawable.ic_keyboard_arrow_down_black_48dp
         );
 
         itemHolder.rootView.setOnClickListener(new View.OnClickListener() {

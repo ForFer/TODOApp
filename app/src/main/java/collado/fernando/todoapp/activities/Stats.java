@@ -44,12 +44,14 @@ import collado.fernando.todoapp.models.Task;
 
 public class Stats extends AppCompatActivity{
 
-    private static final String[] TAGS = new String[]{"No tag", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
+    private static String[] TAGS;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.stats);
+
+        TAGS = getIntent().getStringExtra("TAGS").split(",");
 
         Intent intent = getIntent();
         ArrayList<Stat> stats = intent.getParcelableArrayListExtra("stats");
