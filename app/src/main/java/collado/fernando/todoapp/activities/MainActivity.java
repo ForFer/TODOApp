@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
         for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
             String section_d = entry.getKey();
-            MySection section = new MySection(section_d,entry.getValue(), sectionAdapter, this, TAGS);
+            MySection section = new MySection(section_d,entry.getValue(), sectionAdapter, this, TAGS, mySections);
             sectionAdapter.addSection(section);
             mySections.add(section);
         }

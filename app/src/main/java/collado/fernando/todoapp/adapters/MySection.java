@@ -38,19 +38,22 @@ public class MySection extends StatelessSection {
     private Context mainContext;
     private String[] TAGS;
     private SectionedRecyclerViewAdapter sectionedAdapter;
+    private ArrayList<MySection> mySections;
 
     public MySection(String section_name, ArrayList<Task> taskList,
                      SectionedRecyclerViewAdapter sectionedAdapter,
-                     Context mainContext, String[] TAGS
+                     Context mainContext, String[] TAGS,
+                     ArrayList<MySection> mySections
                      ) {
         super(new SectionParameters.Builder(R.layout.task)
             .headerResourceId(R.layout.section_header)
             .build()
         );
 
+        this.mySections = mySections;
         this.TAGS = TAGS;
         this.mainContext = mainContext;
-        this.section_date = section_name.substring(8,10) + '-' + section_name.substring(5,7) + '-' + section_name.substring(0,4);
+        this.section_date = section_name;
         this.taskList = taskList;
         this.sectionedAdapter = sectionedAdapter;
 
@@ -125,7 +128,14 @@ public class MySection extends StatelessSection {
                         String current_date = String.valueOf(year) + "-" + str_month + "-" +  str_day ;
 
                         String prev_date = task.getDate();
-                        if(!current_date.equals(prev_date)) taskList.remove(position);
+                        if(!current_date.equals(prev_date)){
+                            taskList.remove(position);
+                            for(MySection mySection : mySections){
+                                if(mySection.section_date.equals(current_date)){
+                                    mySection.taskList.add(0, task);
+                                }
+                            }
+                        }
 
                         task.setDate(current_date);
                         task.setName(name);
@@ -176,7 +186,8 @@ public class MySection extends StatelessSection {
     @Override
     public void onBindHeaderViewHolder(RecyclerView.ViewHolder holder) {
         final HeaderViewHolder itemHolder = (HeaderViewHolder) holder;
-        itemHolder.section_date.setText(section_date);
+        String date = section_date.substring(8,10) + '-' + section_date.substring(5,7) + '-' + section_date.substring(0,4);
+        itemHolder.section_date.setText(date);
         itemHolder.imgArrow.setImageResource(
                 expanded ? R.drawable.ic_keyboard_arrow_up_black_48dp : R.drawable.ic_keyboard_arrow_down_black_48dp
         );
