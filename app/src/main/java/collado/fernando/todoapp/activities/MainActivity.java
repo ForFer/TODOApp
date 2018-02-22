@@ -31,7 +31,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
 
 import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.adapters.MySection;
@@ -185,8 +184,7 @@ public class MainActivity extends AppCompatActivity {
             calendar.set(Calendar.SECOND, _date[2]);
 
             String big_text = NIGHT_NOTIFICATION_TEXT ;
-            setNotification(big_text,"","", "1",calendar);
-
+            setNotification(big_text,"", "1",calendar);
         }
 
         boolean notif2 = preferences.getBoolean("switch_notif_2", true);
@@ -208,12 +206,11 @@ public class MainActivity extends AppCompatActivity {
             String big_text = "Time to get stuff done!";
             int undoneTasks = db.getTodayUndoneTasks();
             String big_content_title = "You have " + undoneTasks + " tasks to do today";
-            setNotification(big_text,big_content_title,"", "2", calendar);
+            setNotification(big_text,big_content_title,"2", calendar);
         }
-
     }
 
-    private void setNotification(String big_text, String big_content_title, String summary_text, String channel_id, Calendar calendar) {
+    private void setNotification(String big_text, String big_content_title, String channel_id, Calendar calendar) {
         /**
          * Set daily notifications
          */
@@ -222,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
         Intent notificationIntent = new Intent(this, AlarmReceiver.class);
         notificationIntent.putExtra("BIG_CONTENT_TITLE", big_content_title);
         notificationIntent.putExtra("BIG_TEXT", big_text);
-        notificationIntent.putExtra("SUMMARY_TEXT", summary_text);
         notificationIntent.putExtra("CHANNEL_ID", channel_id);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -242,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
          * Iterates over all the content of the DB to create sections (days)
          * with tasks each section
          */
-        sectionHeader = (RecyclerView)findViewById(R.id.task_list);
+        sectionHeader = findViewById(R.id.task_list);
 
         LinearLayoutManager mLinMan = new LinearLayoutManager(this);
 
@@ -332,23 +328,33 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Stat> allStats = db.getAllStats();
         Intent statsIntent = new Intent(this, Stats.class);
         statsIntent.putExtra("stats", allStats);
-        int []tags = new int[TAGS.length];
+        int tagsSize = TAGS.length;
+        int []tags = new int[tagsSize*2];
         tasks_by_day = db.getAllTasks();
         for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
             ArrayList<Task> tasks = entry.getValue();
             for(Task task : tasks){
                 int index = getIndexFromTag(task.getTag());
-                if (index > -1) tags[index] += 1;
+                if (index > -1) {
+                    tags[index] += 1;
+                    if(task.isDone()){
+                        tags[index+tagsSize] += 1;
+                    }
+                }
             }
         }
 
         int i, arrLen = tags.length;
         StringBuilder taskByTag = new StringBuilder();
         StringBuilder tagNames = new StringBuilder();
-        for (i=0; i<arrLen-1; i++){
-            taskByTag.append(tags[i] +",");
-            tagNames.append(TAGS[i] +",");
 
+        for (i=0; i<arrLen-1; i++) {
+            taskByTag.append(tags[i] + ",");
+        }
+
+        arrLen = tagsSize;
+        for (i=0; i<arrLen-1; i++){
+            tagNames.append(TAGS[i] +",");
         }
 
         taskByTag.append(tags[arrLen-1]);

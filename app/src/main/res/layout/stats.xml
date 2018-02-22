@@ -96,6 +96,24 @@
                 android:layout_below="@id/tags_chart_title"
                 />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/tags_stats_bar"
+                android:layout_below="@+id/tag_bar_chart"
+                android:id="@+id/relative_tags_chart_title"
+                />
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/relative_tag_bar_chart"
+                android:layout_width="match_parent"
+                android:layout_height="450dp"
+                android:minHeight="300dp"
+                android:layout_marginBottom="20dp"
+                android:layout_below="@id/relative_tags_chart_title"
+                />
+
         </RelativeLayout>
 
     </LinearLayout>

@@ -1,7 +1,6 @@
 package collado.fernando.todoapp.adapters;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
@@ -21,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import collado.fernando.todoapp.R;
-import collado.fernando.todoapp.activities.MainActivity;
 import collado.fernando.todoapp.helpers.DBHelper;
 import collado.fernando.todoapp.models.Task;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
@@ -51,7 +49,7 @@ public class MySection extends StatelessSection {
 
         this.TAGS = TAGS;
         this.mainContext = mainContext;
-        this.section_date = section_name.substring(8,10) + '-' + section_name.substring(5,7) + '-' + section_name.substring(0,4);;
+        this.section_date = section_name.substring(8,10) + '-' + section_name.substring(5,7) + '-' + section_name.substring(0,4);
         this.taskList = taskList;
         this.sectionedAdapter = sectionedAdapter;
 
@@ -61,7 +59,7 @@ public class MySection extends StatelessSection {
         this.expanded = current_date.equals(this.section_date);
     }
 
-    public void updateView(){
+    private void updateView(){
         sectionedAdapter.notifyDataSetChanged();
     }
 
@@ -189,19 +187,18 @@ public class MySection extends StatelessSection {
                 updateView();
             }
         });
-
     }
 
     class HeaderViewHolder extends RecyclerView.ViewHolder {
-        public TextView section_date;
+        private TextView section_date;
         private final View rootView;
         private ImageView imgArrow;
 
         public HeaderViewHolder(View itemView){
             super(itemView);
             rootView = itemView;
-            section_date = (TextView) itemView.findViewById(R.id.section_date);
-            imgArrow = (ImageView) itemView.findViewById(R.id.imgArrow);
+            section_date = itemView.findViewById(R.id.section_date);
+            imgArrow = itemView.findViewById(R.id.imgArrow);
         }
     }
 
@@ -212,16 +209,15 @@ public class MySection extends StatelessSection {
         private final ImageView removeBtn;
         private final ImageView editTask;
 
-        public MyItemViewHolder(View itemView){
+        protected MyItemViewHolder(View itemView){
             super(itemView);
 
-            taskDone = (CheckBox)itemView.findViewById(R.id.cb);
-            taskName = (TextView)itemView.findViewById(R.id.taskName);
-            taskTag =  (TextView) itemView.findViewById(R.id.taskTag);
-            editTask = (ImageView) itemView.findViewById(R.id.editTask);
-            removeBtn = (ImageView) itemView.findViewById(R.id.deleteTask);
+            taskDone  = itemView.findViewById(R.id.cb);
+            taskName  = itemView.findViewById(R.id.taskName);
+            taskTag   =  itemView.findViewById(R.id.taskTag);
+            editTask  = itemView.findViewById(R.id.editTask);
+            removeBtn = itemView.findViewById(R.id.deleteTask);
             removeBtn.setClickable(true);
         }
     }
-
 }

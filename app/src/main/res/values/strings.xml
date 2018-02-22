@@ -1,12 +1,15 @@
 <resources>
     <string name="app_name">TODOApp</string>
     <string name="action_settings">Settings</string>
+
+    <!-- Strings related to Stats -->
     <string name="action_analytics">Stats</string>
     <string name="daily_stats">Daily report</string>
     <string name="total_stats">Total relative stats </string>
-    <string name="total_stats_bar">Total absolute stats </string>
-    <string name="tags_stats_bar">Percentage tasks by tag </string>
+    <string name="total_stats_bar">Total tasks</string>
+    <string name="tags_stats_bar">Percentage tasks assigned to tag </string>
     <string name="title_activity_settings">Settings</string>
+    <string name="relative_tags_chart_title">Percentage of tasks completed by tag</string>
 
     <!-- Strings related to Settings -->
 

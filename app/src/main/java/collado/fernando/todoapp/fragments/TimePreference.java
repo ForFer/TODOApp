@@ -18,13 +18,13 @@ public class TimePreference extends DialogPreference {
     private int lastMinute=0;
     private TimePicker picker=null;
 
-    public static int getHour(String time) {
+    private static int getHour(String time) {
         String[] pieces=time.split(":");
 
         return(Integer.parseInt(pieces[0]));
     }
 
-    public static int getMinute(String time) {
+    private static int getMinute(String time) {
         String[] pieces=time.split(":");
 
         return(Integer.parseInt(pieces[1]));
@@ -75,7 +75,7 @@ public class TimePreference extends DialogPreference {
 
     @Override
     protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
-        String time=null;
+        String time;
 
         if (restoreValue) {
             if (defaultValue==null) {

@@ -1,8 +1,5 @@
 package collado.fernando.todoapp.activities;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,16 +24,12 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.helpers.StringXAxisValueFormatter;
 import collado.fernando.todoapp.models.Stat;
-import collado.fernando.todoapp.models.Task;
 
 /**
  * Created by Fernando on 11/02/18.
@@ -82,9 +75,11 @@ public class Stats extends AppCompatActivity{
         printPieChart(getPieData(total, done));
         printTotalBarChart(total, done);
 
-        String  tags = getIntent().getStringExtra("tasks");
+        String[]  tag_info = getIntent().getStringExtra("tasks").split(",");
+        String[] absolute_tags = Arrays.copyOfRange(tag_info, 0, TAGS.length);
 
-        printByTagBarChart(tags.split(","));
+        printAbsoluteByTagBarChart(absolute_tags);
+        printRelativeByTagBarChart(tag_info);
     }
 
     private PieData getPieData(int total, int done){
@@ -104,7 +99,6 @@ public class Stats extends AppCompatActivity{
         dataSet.setSliceSpace(3f);
 
         return new PieData(dataSet);
-
     }
 
     private void printPieChart(PieData pieData){
@@ -129,7 +123,6 @@ public class Stats extends AppCompatActivity{
         pieData.setValueTextSize(11f);
 
         pChart.setData(pieData);
-
     }
 
     private void printLinearChart(List<Entry> entries,  String[] dates){
@@ -182,12 +175,13 @@ public class Stats extends AppCompatActivity{
         barChartFromData(bChart, barEntries, new String[] { "Total", "Done" });
     }
 
-    private void printByTagBarChart(String[] tags){
-
+    private void printAbsoluteByTagBarChart(String[] tags){
+        /**
+         * Handles (absolute data) BarChart creation and settings
+         */
         BarChart bChart = (BarChart) findViewById(R.id.tag_bar_chart);
         bChart.getDescription().setEnabled(false);
         bChart.getAxisLeft().setAxisMaximum(100);
-
 
         List<BarEntry> barEntries = new ArrayList<>();
         int total = 0;
@@ -195,8 +189,31 @@ public class Stats extends AppCompatActivity{
             total += Integer.parseInt(tags[i]);
         }
         for(int i=0; i<TAGS.length; i++){
-            float tagValue = (float)Integer.parseInt(tags[i])/total * 100;
+            float tagValue = 0;
+            if(total>0) tagValue = (float)Integer.parseInt(tags[i])/total * 100;
+            BarEntry barEntryTag = new BarEntry(i, tagValue, TAGS[i]);
+            barEntries.add(barEntryTag);
+        }
 
+        barChartFromData(bChart, barEntries, TAGS);
+    }
+
+    private void printRelativeByTagBarChart(String[] tags){
+        /**
+        * Handles (relative data) BarChart creation and settings
+        */
+        BarChart bChart = (BarChart) findViewById(R.id.relative_tag_bar_chart);
+        bChart.getDescription().setEnabled(false);
+        bChart.getAxisLeft().setAxisMaximum(100);
+
+        List<BarEntry> barEntries = new ArrayList<>();
+        int tagSize = TAGS.length;
+
+        for(int i=0; i<tagSize; i++){
+            float tagValue = 0;
+            if(Integer.parseInt(tags[i]) != 0){
+                tagValue = (float)Integer.parseInt(tags[i+tagSize])/Integer.parseInt(tags[i]) * 100;
+            }
             BarEntry barEntryTag = new BarEntry(i, tagValue, TAGS[i]);
             barEntries.add(barEntryTag);
         }
@@ -230,5 +247,4 @@ public class Stats extends AppCompatActivity{
         bChart.setData(barData);
         bChart.invalidate();
     }
-
 }
