@@ -172,16 +172,7 @@ public class MainActivity extends AppCompatActivity {
         if(notif1){
 
             String[] date = preferences.getString("notification_time_1", "22:30:00").split(":");
-            int[] _date = {0,0,0};
-
-            for(int i=0; i<3; i++){
-                if(date.length > i) { _date[i] = Integer.parseInt(date[i]); }
-            }
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.HOUR_OF_DAY, _date[0]);
-            calendar.set(Calendar.MINUTE, _date[1]);
-            calendar.set(Calendar.SECOND, _date[2]);
+            Calendar calendar = calendarFromDate(date);
 
             String big_text = NIGHT_NOTIFICATION_TEXT ;
             setNotification(big_text,"", "1",calendar);
@@ -192,22 +183,29 @@ public class MainActivity extends AppCompatActivity {
         if(notif2) {
 
             String[] date = preferences.getString("notification_time_2", "17:30:00").split(":");
-            int[] _date = {0, 0, 0};
-
-            for (int i = 0; i < 3; i++) {
-                if (_date.length >= i) _date[i] = Integer.parseInt(date[i]);
-            }
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.HOUR_OF_DAY, _date[0]);
-            calendar.set(Calendar.MINUTE, _date[1]);
-            calendar.set(Calendar.SECOND, _date[2]);
+            Calendar calendar = calendarFromDate(date);
 
             String big_text = "Time to get stuff done!";
             int undoneTasks = db.getTodayUndoneTasks();
             String big_content_title = "You have " + undoneTasks + " tasks to do today";
             setNotification(big_text,big_content_title,"2", calendar);
         }
+    }
+
+    private Calendar calendarFromDate(String[] date){
+
+        Calendar calendar = Calendar.getInstance();
+
+        int[] time = {0, 0, 0};
+        for (int i = 0; i < 3; i++) {
+            if (date.length > i) time[i] = Integer.parseInt(date[i]);
+        }
+
+        calendar.set(Calendar.HOUR_OF_DAY, time[0]);
+        calendar.set(Calendar.MINUTE, time[1]);
+        calendar.set(Calendar.SECOND, time[2]);
+
+        return calendar;
     }
 
     private void setNotification(String big_text, String big_content_title, String channel_id, Calendar calendar) {
@@ -229,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
 
         AlarmManager am = (AlarmManager) this.getSystemService(MainActivity.ALARM_SERVICE);
         am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
-
     }
 
     private void setLinearLayoutManager(){

@@ -23,12 +23,9 @@
         />
 
     <collado.fernando.todoapp.fragments.TimePreference
-        android:key="notification_time_1"
+        android:key="notification_time_2"
         android:title="Time for the notification"
         android:dependency="switch_notif_2"
         />
-
-
-
 
 </PreferenceScreen>

@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -357,10 +358,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        Date today = new Date();
-        int day = today.getDay();
-        int month = today.getMonth();
-        int year = today.getYear();
+        Calendar c = Calendar.getInstance();
+
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        int month = c.get(Calendar.MONTH)+1;
+        int year = c.get(Calendar.YEAR);
 
         String str_day = day<=9?"0"+String.valueOf(day):String.valueOf(day);
         String str_month = month<=9?"0"+String.valueOf(month):String.valueOf(month);

@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import collado.fernando.todoapp.R;
+import collado.fernando.todoapp.activities.MainActivity;
 import collado.fernando.todoapp.helpers.DBHelper;
 import collado.fernando.todoapp.models.Task;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
@@ -122,6 +123,9 @@ public class MySection extends StatelessSection {
                         String str_day = day<=9?"0"+String.valueOf(day):String.valueOf(day);
                         String str_month = month<=9?"0"+String.valueOf(month):String.valueOf(month);
                         String current_date = String.valueOf(year) + "-" + str_month + "-" +  str_day ;
+
+                        String prev_date = task.getDate();
+                        if(!current_date.equals(prev_date)) taskList.remove(position);
 
                         task.setDate(current_date);
                         task.setName(name);
