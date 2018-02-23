@@ -4,13 +4,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -20,7 +18,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import collado.fernando.todoapp.R;
-import collado.fernando.todoapp.activities.MainActivity;
 import collado.fernando.todoapp.helpers.DBHelper;
 import collado.fernando.todoapp.models.Task;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
@@ -38,22 +35,19 @@ public class MySection extends StatelessSection {
     private Context mainContext;
     private String[] TAGS;
     private SectionedRecyclerViewAdapter sectionedAdapter;
-    private ArrayList<MySection> mySections;
 
     public MySection(String section_name, ArrayList<Task> taskList,
                      SectionedRecyclerViewAdapter sectionedAdapter,
-                     Context mainContext, String[] TAGS,
-                     ArrayList<MySection> mySections
+                     Context mainContext, String[] TAGS
                      ) {
         super(new SectionParameters.Builder(R.layout.task)
             .headerResourceId(R.layout.section_header)
             .build()
         );
 
-        this.mySections = mySections;
         this.TAGS = TAGS;
         this.mainContext = mainContext;
-        this.section_date = section_name;
+        this.section_date = section_name.substring(8,10) + '-' + section_name.substring(5,7) + '-' + section_name.substring(0,4);;
         this.taskList = taskList;
         this.sectionedAdapter = sectionedAdapter;
 
@@ -96,22 +90,17 @@ public class MySection extends StatelessSection {
                 builder.setTitle("Edit TODO");
 
                 LayoutInflater inflater = (LayoutInflater) mainContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View alertLayout = inflater.inflate(R.layout.custom_date_picker, null);
-                final EditText input = alertLayout.findViewById(R.id.add_task_dialog);
-                final DatePicker datePicker = alertLayout.findViewById(R.id.date_picker_dialog);
-                final Spinner dropdown = alertLayout.findViewById(R.id.add_tag);
-
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(mainContext, android.R.layout.simple_spinner_dropdown_item, TAGS);
-                dropdown.setAdapter(adapter);
+                View alertLayout = inflater.inflate(R.layout.edit_task, null);
+                final EditText input = alertLayout.findViewById(R.id.edit_task_name);
+                final Spinner dropdown = alertLayout.findViewById(R.id.edit_task_tag);
 
                 input.setText(task.getName());
-                int spinnerPosition = adapter.getPosition(task.getTag());
-                dropdown.setSelection(spinnerPosition);
-                int year = Integer.parseInt(task.getDate().substring(0,4));
-                int month = Integer.parseInt(task.getDate().substring(5,7))-1;
-                int day = Integer.parseInt(task.getDate().substring(8,10));
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(mainContext, android.R.layout.simple_spinner_dropdown_item, TAGS);
 
-                datePicker.updateDate(year, month, day);
+                int spinnerPosition = adapter.getPosition(task.getTag());
+                dropdown.setAdapter(adapter);
+                dropdown.setSelection(spinnerPosition);
+
 
                 builder.setView(alertLayout);
                 builder.setPositiveButton("Edit", new DialogInterface.OnClickListener() {
@@ -119,25 +108,6 @@ public class MySection extends StatelessSection {
                     public void onClick(DialogInterface dialog, int which) {
                         String name = input.getText().toString().trim();
 
-                        int day = datePicker.getDayOfMonth();
-                        int month = datePicker.getMonth() + 1;
-                        int year = datePicker.getYear();
-
-                        String str_day = day<=9?"0"+String.valueOf(day):String.valueOf(day);
-                        String str_month = month<=9?"0"+String.valueOf(month):String.valueOf(month);
-                        String current_date = String.valueOf(year) + "-" + str_month + "-" +  str_day ;
-
-                        String prev_date = task.getDate();
-                        if(!current_date.equals(prev_date)){
-                            taskList.remove(position);
-                            for(MySection mySection : mySections){
-                                if(mySection.section_date.equals(current_date)){
-                                    mySection.taskList.add(0, task);
-                                }
-                            }
-                        }
-
-                        task.setDate(current_date);
                         task.setName(name);
                         task.setTag(dropdown.getSelectedItem().toString());
                         db.updateTask(task);
@@ -186,8 +156,7 @@ public class MySection extends StatelessSection {
     @Override
     public void onBindHeaderViewHolder(RecyclerView.ViewHolder holder) {
         final HeaderViewHolder itemHolder = (HeaderViewHolder) holder;
-        String date = section_date.substring(8,10) + '-' + section_date.substring(5,7) + '-' + section_date.substring(0,4);
-        itemHolder.section_date.setText(date);
+        itemHolder.section_date.setText(section_date);
         itemHolder.imgArrow.setImageResource(
                 expanded ? R.drawable.ic_keyboard_arrow_up_black_48dp : R.drawable.ic_keyboard_arrow_down_black_48dp
         );

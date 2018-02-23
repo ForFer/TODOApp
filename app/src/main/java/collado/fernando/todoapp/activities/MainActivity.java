@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         this.setLinearLayoutManager();
         this.setBanner(getDate());
         this.setNotifications();
+
     }
 
     @Override
@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setTitle("Add TODO");
 
         LayoutInflater inflater = getLayoutInflater();
-        View alertLayout = inflater.inflate(R.layout.custom_date_picker, null);
+        View alertLayout = inflater.inflate(R.layout.add_task_dialog, null);
         final EditText input = alertLayout.findViewById(R.id.add_task_dialog);
         final DatePicker datePicker = alertLayout.findViewById(R.id.date_picker_dialog);
         final Spinner dropdown = alertLayout.findViewById(R.id.add_tag);
@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
         for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
             String section_d = entry.getKey();
-            MySection section = new MySection(section_d,entry.getValue(), sectionAdapter, this, TAGS, mySections);
+            MySection section = new MySection(section_d,entry.getValue(), sectionAdapter, this, TAGS);
             sectionAdapter.addSection(section);
             mySections.add(section);
         }

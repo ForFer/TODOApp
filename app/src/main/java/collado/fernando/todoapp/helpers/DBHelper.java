@@ -47,12 +47,12 @@ public class DBHelper extends SQLiteOpenHelper {
                 "tag TEXT )";
         db.execSQL(CREATE_TASK_TABLE);
 
-        CREATE_TASK_TABLE = "CREATE TABLE IF NOT EXISTS stats ( " +
+        String CREATE_STAT_TABLE = "CREATE TABLE IF NOT EXISTS stats ( " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "total INTEGER," +
                 "done INTEGER," +
                 "date DATE )";
-        db.execSQL(CREATE_TASK_TABLE);
+        db.execSQL(CREATE_STAT_TABLE);
     }
     
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVer){
@@ -233,7 +233,6 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues value = statToContentValues(stat);
         db.insert(stat.TABLE, null, value);
-        db.close();
 
     }
 
@@ -243,11 +242,9 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues value = statToContentValues(stat);
         int i = db.update(Stat.TABLE,
                 value,
-                Stat.KEY_ID + " = ? ",
-                new String[] { String.valueOf(stat.getId())}
+                Stat.KEY_DATE + " = ? ",
+                new String[] { String.valueOf(stat.getDate())}
         );
-
-        db.close();
 
         return i;
     }
@@ -347,6 +344,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
             } while(cursor.moveToNext());
         }
+
         return stats;
 
     }
@@ -379,5 +377,52 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
 
         return stat.getUndone();
+    }
+
+    public void populateStats(){
+        /**
+         * Deletes all stats, and populates the table again
+         * To be used in case of error with stats
+         *
+         */
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        deleteAllStats(db);
+        onCreate(db);
+
+        String date_query = "SELECT date FROM tasks group by date order by date ASC";
+        Cursor cursor = db.rawQuery(date_query, null);
+
+        Cursor inner_cursor;
+
+        if(cursor.moveToFirst()){
+            do {
+
+                String current_date = cursor.getString(0);
+
+                Stat stat = new Stat(0,0,current_date);
+
+                String query = "SELECT * FROM tasks where date = ?";
+                inner_cursor = db.rawQuery(query, new String[] {current_date});
+
+                Task task;
+                if(inner_cursor.moveToFirst()){
+                    int total = 0;
+                    int done = 0;
+                    do {
+                        task = cursorToTask(inner_cursor);
+                        total++;
+                        if(task.isDone()) done++;
+                    } while(inner_cursor.moveToNext());
+
+                    stat.setDone(done);
+                    stat.setTotal(total);
+
+                    addStat(stat);
+                }
+            } while(cursor.moveToNext());
+        }
+
+
     }
 }
