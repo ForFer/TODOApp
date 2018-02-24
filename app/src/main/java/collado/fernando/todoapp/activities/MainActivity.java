@@ -3,6 +3,7 @@ package collado.fernando.todoapp.activities;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -36,6 +38,7 @@ import collado.fernando.todoapp.adapters.MySection;
 import collado.fernando.todoapp.helpers.AlarmReceiver;
 import collado.fernando.todoapp.helpers.DBHelper;
 import collado.fernando.todoapp.models.Stat;
+import collado.fernando.todoapp.models.Tag;
 import collado.fernando.todoapp.models.Task;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
@@ -49,7 +52,8 @@ public class MainActivity extends AppCompatActivity {
     private String _bannerDate;
     SharedPreferences preferences;
 
-    private String[] TAGS = new String[]{"No tag", "Personal", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
+    //private String[] TAGS = new String[]{"No tag", "Personal", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
+    private String[] TAGS;
     private String NIGHT_NOTIFICATION_TEXT = "Remember to set your tasks for the next day";
 
     @Override
@@ -63,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         db = new DBHelper(this);
+        TAGS = db.getAllTags();
 
         FloatingActionButton addTask = findViewById(R.id.addTask);
         addTask.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +81,9 @@ public class MainActivity extends AppCompatActivity {
         this.setLinearLayoutManager();
         this.setBanner(getDate());
         this.setNotifications();
+
+        NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
 
     }
 
@@ -102,6 +110,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (id == R.id.action_analytics) {
             return ShowAnalytics();
+        }
+
+        if (id == R.id.action_tag) {
+            //Intent intent = new Intent(this, )
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

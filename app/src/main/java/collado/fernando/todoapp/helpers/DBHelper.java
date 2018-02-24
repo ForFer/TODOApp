@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import collado.fernando.todoapp.models.Stat;
+import collado.fernando.todoapp.models.Tag;
 import collado.fernando.todoapp.models.Task;
 
 /**
@@ -31,6 +32,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String STATS_QUERY_LIMIT = "30";
     private static final String TASKS_QUERY_LIMIT = "30";
 
+    private static final String NO_TAG = "No tag";
 
     public DBHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -45,19 +47,28 @@ public class DBHelper extends SQLiteOpenHelper {
                 "date DATE," +
                 "timestamp INTEGER," +
                 "tag TEXT )";
-        db.execSQL(CREATE_TASK_TABLE);
 
         String CREATE_STAT_TABLE = "CREATE TABLE IF NOT EXISTS stats ( " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "total INTEGER," +
                 "done INTEGER," +
                 "date DATE )";
+
+
+        String CREATE_TAG_TABLE = "CREATE TABLE IF NOT EXISTS tags ( " +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "tag TEXT )";
+
+        db.execSQL(CREATE_TASK_TABLE);
         db.execSQL(CREATE_STAT_TABLE);
+        db.execSQL(CREATE_TAG_TABLE);
+
     }
     
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVer){
         this.deleteAllTasks(db);
         this.deleteAllStats(db);
+        this.deleteAllTags(db);
         this.onCreate(db);
     }
 
@@ -67,6 +78,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void deleteAllStats(SQLiteDatabase db){
         db.execSQL("DROP TABLE IF EXISTS stats");
+    }
+
+    public void deleteAllTags(SQLiteDatabase db){
+        db.execSQL("DROP TABLE IF EXISTS tags");
     }
 
     public void addTask(Task task){
@@ -196,34 +211,10 @@ public class DBHelper extends SQLiteOpenHelper {
          */
         ContentValues value = new ContentValues();
         value.put(task.KEY_NAME, task.getName());
-        value.put(task.KEY_DONE, task.isDone() == true ? 1 : 0);
+        value.put(task.KEY_DONE, task.isDone() ? 1 : 0);
         value.put(task.KEY__TIMESTAMP, task.get_timestamp());
         value.put(task.KEY_DATE, task.getDate());
         value.put(task.KEY_TAG, task.getTag());
-
-        return value;
-    }
-
-
-    public Stat cursorToStat(Cursor cursor){
-        /**
-         * Converts a Cursor to Stat
-         * Column order --> id, total, done, date
-         */
-        Stat stat = new Stat(Integer.parseInt(cursor.getString(1)), Integer.parseInt(cursor.getString(2)), cursor.getString(3));
-        stat.setID(Integer.parseInt(cursor.getString(0)));
-
-        return stat;
-    }
-
-    public ContentValues statToContentValues(Stat stat){
-        /**
-         * Create VALUES to insert from stat
-         */
-        ContentValues value = new ContentValues();
-        value.put(stat.KEY_DATE, stat.getDate());
-        value.put(stat.KEY_DONE, stat.getDone());
-        value.put(stat.KEY_TOTAL, stat.getTotal());
 
         return value;
     }
@@ -234,83 +225,6 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues value = statToContentValues(stat);
         db.insert(stat.TABLE, null, value);
 
-    }
-
-    public int updateStat(Stat stat){
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues value = statToContentValues(stat);
-        int i = db.update(Stat.TABLE,
-                value,
-                Stat.KEY_DATE + " = ? ",
-                new String[] { String.valueOf(stat.getDate())}
-        );
-
-        return i;
-    }
-
-    public void updateStats(Task task, int option){
-        /**
-         * option 0 -> adding task
-         * option 1 -> removing task
-         */
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        String query = "SELECT * FROM stats where date = ?";
-        Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
-
-        if (cursor != null  && cursor.getCount() > 0){ // If there is a stat for that day, get value, update, and store
-            cursor.moveToFirst();
-            Stat oldStat = cursorToStat(cursor);
-            int total,totalDone;
-
-            if(option == 0){
-                total = oldStat.getTotal() + 1;
-                totalDone = oldStat.getDone();
-            }
-            else{
-                total = oldStat.getTotal() - 1;
-                totalDone = task.isDone() ? oldStat.getDone() -1 : oldStat.getDone();
-            }
-
-            oldStat.setDone(totalDone);
-            oldStat.setTotal(total);
-            updateStat(oldStat);
-        }
-        else { // If there is no stat for that day, create value if adding task
-            if(option == 0){
-                Stat stat = new Stat(1, task.isDone() ? 1 : 0, task.getDate());
-                addStat(stat);
-            }
-        }
-    }
-
-    public void updateStats(Task task, int option, boolean previousState){
-        /**
-         * When a task is being updated (from undone to done, and vice versa)
-         *
-         */
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        String query = "SELECT * FROM stats where date = ?";
-        Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
-
-        if (cursor != null  && cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            Stat oldStat = cursorToStat(cursor);
-            // If previousState was true (done), subtract 1 from the done tasks
-            if(previousState){
-                int totalDone = oldStat.getDone() - 1;
-                if(totalDone < 0) oldStat.setDone(0);
-                else oldStat.setDone(totalDone);
-            }
-            else{
-                oldStat.setDone(oldStat.getDone() + 1);
-            }
-            updateStat(oldStat);
-        }
     }
 
     public ArrayList<Stat> getAllStats(){
@@ -379,6 +293,82 @@ public class DBHelper extends SQLiteOpenHelper {
         return stat.getUndone();
     }
 
+    public int updateStat(Stat stat){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues value = statToContentValues(stat);
+        int i = db.update(Stat.TABLE,
+                value,
+                Stat.KEY_DATE + " = ? ",
+                new String[] { String.valueOf(stat.getDate())}
+        );
+
+        return i;
+    }
+
+    public void updateStats(Task task, int option){
+        /**
+         * option 0 -> adding task
+         * option 1 -> removing task
+         */
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "SELECT * FROM stats where date = ?";
+        Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
+
+        if (cursor != null  && cursor.getCount() > 0){ // If there is a stat for that day, get value, update, and store
+            cursor.moveToFirst();
+            Stat oldStat = cursorToStat(cursor);
+            int total,totalDone;
+
+            if(option == 0){
+                total = oldStat.getTotal() + 1;
+                totalDone = oldStat.getDone();
+            }
+            else{
+                total = oldStat.getTotal() - 1;
+                totalDone = task.isDone() ? oldStat.getDone() -1 : oldStat.getDone();
+            }
+
+            oldStat.setDone(totalDone);
+            oldStat.setTotal(total);
+            updateStat(oldStat);
+        }
+        else { // If there is no stat for that day, create value if adding task
+            if(option == 0){
+                Stat stat = new Stat(1, task.isDone() ? 1 : 0, task.getDate());
+                addStat(stat);
+            }
+        }
+    }
+
+    public void updateStats(Task task, int option, boolean previousState){
+        /**
+         * When a task is being updated (from undone to done, and vice versa)
+         */
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "SELECT * FROM stats where date = ?";
+        Cursor cursor = db.rawQuery(query, new String[] {task.getDate()});
+
+        if (cursor != null  && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            Stat oldStat = cursorToStat(cursor);
+            // If previousState was true (done), subtract 1 from the done tasks
+            if(previousState){
+                int totalDone = oldStat.getDone() - 1;
+                if(totalDone < 0) oldStat.setDone(0);
+                else oldStat.setDone(totalDone);
+            }
+            else{
+                oldStat.setDone(oldStat.getDone() + 1);
+            }
+            updateStat(oldStat);
+        }
+    }
+
     public void populateStats(){
         /**
          * Deletes all stats, and populates the table again
@@ -422,7 +412,129 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
             } while(cursor.moveToNext());
         }
+    }
+
+    public Stat cursorToStat(Cursor cursor){
+        /**
+         * Converts a Cursor to Stat
+         * Column order --> id, total, done, date
+         */
+        Stat stat = new Stat(Integer.parseInt(cursor.getString(1)), Integer.parseInt(cursor.getString(2)), cursor.getString(3));
+        stat.setID(Integer.parseInt(cursor.getString(0)));
+
+        return stat;
+    }
+
+    public ContentValues statToContentValues(Stat stat){
+        /**
+         * Create VALUES to insert from stat
+         */
+        ContentValues value = new ContentValues();
+        value.put(stat.KEY_DATE, stat.getDate());
+        value.put(stat.KEY_DONE, stat.getDone());
+        value.put(stat.KEY_TOTAL, stat.getTotal());
+
+        return value;
+    }
+
+    public void addTag(Tag tag){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues value = tagToContentValues(tag);
+
+        db.insert(tag.TABLE, null, value);
+        db.close();
+    }
+
+    public String[] getAllTags(){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String[] tags;
+
+        String query = "SELECT COUNT(tag) FROM tags";
+        Cursor cursor = db.rawQuery(query, new String[] {});
+        if(cursor.moveToFirst()) {
+            int totalTags = cursor.getInt(0);
+
+            tags = new String[totalTags];
+
+            query = "SELECT * FROM tags ORDER BY tag";
+            Cursor inner_cursor = db.rawQuery(query, new String[]{});
+
+            int i = 0;
+
+            if (inner_cursor .moveToFirst()) {
+                do {
+                    Tag _tag = cursorToTag(inner_cursor );
+                    tags[i++] = _tag.getName();
+                } while (inner_cursor .moveToNext());
+            }
+        }
+        else{
+            tags = new String[1];
+            tags[0] = NO_TAG;
+        }
+        return tags;
+    }
+
+    public int updateTag(Tag tag){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues value = new ContentValues();
+        value.put(tag.KEY_NAME, tag.getName());
+
+        int i = db.update(Tag.TABLE,
+                value,
+                Tag.KEY_NAME + " = ? ",
+                new String[] { String.valueOf(tag.getName())}
+        );
+
+        db.close();
+
+        return i;
+    }
+
+    public void deleteTag(Tag tag){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(Tag.TABLE,
+                Tag.KEY_NAME + " = ?",
+                new String[] { String.valueOf(tag.getName()) }
+        );
+        db.close();
+
+        String query = "SELECT * FROM tags where tag = ?";
+        Cursor cursor = db.rawQuery(query, new String[] {tag.getName()});
 
 
+        if(cursor.moveToFirst()){
+            do {
+                Tag _tag = cursorToTag(cursor);
+                _tag.setName(NO_TAG);
+                updateTag(tag);
+
+            } while(cursor.moveToNext());
+        }
+
+    }
+
+    public Tag cursorToTag(Cursor cursor){
+        /**
+         * Converts a Cursor to Tag
+         * Column order --> id, tag
+         */
+        Tag tag = new Tag(cursor.getString(1));
+        return tag;
+    }
+
+    public ContentValues tagToContentValues(Tag tag){
+        /**
+         * Create VALUES to insert from task
+         */
+        ContentValues value = new ContentValues();
+        value.put(tag.KEY_NAME, tag.getName());
+        return value;
     }
 }
