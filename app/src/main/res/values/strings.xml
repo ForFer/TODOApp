@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">TODOApp</string>
     <string name="action_settings">Settings</string>
+    <string name="action_tags">Manage tags</string>
+
+    <!-- Strings related to edit tags -->
+    <string name="title_activity_tags">Edit tags</string>
+
 
     <!-- Strings related to Stats -->
     <string name="action_analytics">Stats</string>

@@ -22,6 +22,19 @@ import collado.fernando.todoapp.models.Task;
 
 /**
  * Created by Fernando on 3/02/18.
+ *
+ * Functions
+ * - onCreate
+ * - onUpdate
+ * - deleteAll* (one for every table)
+ *
+ * For every table T, in this order:
+ * - addT
+ * - getT (and getAllT,...)
+ * - updateT (and updateAllT,...)
+ * - deleteT
+ * - cursorToT
+ * - TtoContentValues
  */
 
 public class DBHelper extends SQLiteOpenHelper {
@@ -89,10 +102,10 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues value = taskToContentValues(task);
-        db.insert(task.TABLE, null, value);
+        long i = db.insert(task.TABLE, null, value);
         db.close();
 
-        updateStats(task, 0);
+        if(i > -1) updateStats(task, 0);
     }
 
     public Task getTask(int id){
@@ -149,7 +162,10 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public int updateTask(Task task, boolean previousState){
-
+        /**
+         * If task done status change, update its value in the DB
+         * and update stats accordingly
+         */
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues value = taskToContentValues(task);
         int i = db.update(Task.TABLE,
@@ -160,13 +176,15 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.close();
 
-        updateStats(task, 2, previousState);
+        if(i > 0) updateStats(task, 2, previousState);
 
         return i;
     }
 
     public int updateTask(Task task){
-
+        /**
+         * If task name, or tag are changed, update its value in DB
+         */
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues value = taskToContentValues(task);
         int i = db.update(Task.TABLE,
@@ -183,13 +201,13 @@ public class DBHelper extends SQLiteOpenHelper {
     public void deleteTask(Task task){
         SQLiteDatabase db = this.getWritableDatabase();
 
-        db.delete(Task.TABLE,
+        int i = db.delete(Task.TABLE,
                 Task.KEY_ID + " = ?",
                 new String[] { String.valueOf(task.getTaskId()) }
                 );
         db.close();
 
-        updateStats(task, 1);
+        if(i > 0) updateStats(task, 1);
     }
 
     public Task cursorToTask(Cursor cursor){
@@ -372,9 +390,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public void populateStats(){
         /**
          * Deletes all stats, and populates the table again
-         * To be used in case of error with stats
-         *
          */
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         deleteAllStats(db);
@@ -387,9 +404,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         if(cursor.moveToFirst()){
             do {
-
                 String current_date = cursor.getString(0);
-
                 Stat stat = new Stat(0,0,current_date);
 
                 String query = "SELECT * FROM tasks where date = ?";
@@ -442,12 +457,16 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues value = tagToContentValues(tag);
-
         db.insert(tag.TABLE, null, value);
         db.close();
     }
 
     public String[] getAllTags(){
+        /**
+         * Get all tags from DB, adds NO_TAG in the first position and
+         * returns String[]
+         */
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         String[] tags;
@@ -457,12 +476,13 @@ public class DBHelper extends SQLiteOpenHelper {
         if(cursor.moveToFirst()) {
             int totalTags = cursor.getInt(0);
 
-            tags = new String[totalTags];
+            tags = new String[totalTags + 1];
+            tags[0] = NO_TAG;
 
             query = "SELECT * FROM tags ORDER BY tag";
             Cursor inner_cursor = db.rawQuery(query, new String[]{});
 
-            int i = 0;
+            int i = 1;
 
             if (inner_cursor .moveToFirst()) {
                 do {
@@ -478,46 +498,64 @@ public class DBHelper extends SQLiteOpenHelper {
         return tags;
     }
 
-    public int updateTag(Tag tag){
+    public int updateTag(Tag tag, String previousName){
+        /**
+         * Given a tag, update its value, and update on cascade
+         * all tasks that had that tag
+         */
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues value = new ContentValues();
-        value.put(tag.KEY_NAME, tag.getName());
+        ContentValues value = tagToContentValues(tag);
 
         int i = db.update(Tag.TABLE,
                 value,
                 Tag.KEY_NAME + " = ? ",
-                new String[] { String.valueOf(tag.getName())}
+                new String[] { String.valueOf(previousName)}
         );
 
         db.close();
+
+        // If any update was made
+        if(i > 0) updateAllTags(tag.getName(), previousName);
 
         return i;
     }
 
-    public void deleteTag(Tag tag){
+    public void updateAllTags(String toTag, String fromTag){
+        /**
+         * Update all tasks that have as tag fromTag,
+         * with the tag toTag
+         */
+
         SQLiteDatabase db = this.getWritableDatabase();
-
-        db.delete(Tag.TABLE,
-                Tag.KEY_NAME + " = ?",
-                new String[] { String.valueOf(tag.getName()) }
-        );
-        db.close();
-
-        String query = "SELECT * FROM tags where tag = ?";
-        Cursor cursor = db.rawQuery(query, new String[] {tag.getName()});
-
+        String query = "SELECT * FROM tasks where tag = ?";
+        Cursor cursor = db.rawQuery(query, new String[] {fromTag});
 
         if(cursor.moveToFirst()){
             do {
-                Tag _tag = cursorToTag(cursor);
-                _tag.setName(NO_TAG);
-                updateTag(tag);
+                Task task = cursorToTask(cursor);
+                task.setTag(toTag);
+                updateTask(task);
 
             } while(cursor.moveToNext());
         }
+    }
 
+    public void deleteTag(Tag tag){
+        /**
+         * Delete tag and update tasks with that tag to the
+         * tag NO_TAG, unless it's the one they already had
+         */
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        String tagName = tag.getName();
+        int i = db.delete(Tag.TABLE,
+                Tag.KEY_NAME + " = ?",
+                new String[] { String.valueOf(tagName) }
+        );
+
+        if(i > 0) updateAllTags(NO_TAG, tagName);
     }
 
     public Tag cursorToTag(Cursor cursor){

@@ -37,8 +37,6 @@ import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.adapters.MySection;
 import collado.fernando.todoapp.helpers.AlarmReceiver;
 import collado.fernando.todoapp.helpers.DBHelper;
-import collado.fernando.todoapp.models.Stat;
-import collado.fernando.todoapp.models.Tag;
 import collado.fernando.todoapp.models.Task;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
@@ -67,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         db = new DBHelper(this);
+
         TAGS = db.getAllTags();
 
         FloatingActionButton addTask = findViewById(R.id.addTask);
@@ -109,11 +108,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_analytics) {
-            return ShowAnalytics();
+            Intent statsIntent = new Intent(this, Stats.class);
+            startActivity(statsIntent);
+            return true;
         }
 
         if (id == R.id.action_tag) {
-            //Intent intent = new Intent(this, )
+            Intent intent = new Intent(this, EditTags.class);
+            startActivity(intent);
             return true;
         }
 
@@ -328,63 +330,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
         sectionHeader.setAdapter(sectionAdapter);
-    }
-
-    private boolean ShowAnalytics() {
-        /**
-         * Get all necessary data for showing analytics and
-         * starts Stats activity
-         */
-        ArrayList<Stat> allStats = db.getAllStats();
-        Intent statsIntent = new Intent(this, Stats.class);
-        statsIntent.putExtra("stats", allStats);
-        int tagsSize = TAGS.length;
-        int []tags = new int[tagsSize*2];
-        tasks_by_day = db.getAllTasks();
-        for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
-            ArrayList<Task> tasks = entry.getValue();
-            for(Task task : tasks){
-                int index = getIndexFromTag(task.getTag());
-                if (index > -1) {
-                    tags[index] += 1;
-                    if(task.isDone()){
-                        tags[index+tagsSize] += 1;
-                    }
-                }
-            }
-        }
-
-        int i, arrLen = tags.length;
-        StringBuilder taskByTag = new StringBuilder();
-        StringBuilder tagNames = new StringBuilder();
-
-        for (i=0; i<arrLen-1; i++) {
-            taskByTag.append(tags[i] + ",");
-        }
-
-        arrLen = tagsSize;
-        for (i=0; i<arrLen-1; i++){
-            tagNames.append(TAGS[i] +",");
-        }
-
-        taskByTag.append(tags[arrLen-1]);
-        tagNames.append(TAGS[arrLen-1]);
-
-        statsIntent.putExtra("tasks", taskByTag.toString());
-        statsIntent.putExtra("TAGS", tagNames.toString());
-        startActivity(statsIntent);
-        return true;
-    }
-
-    private int getIndexFromTag(String tag){
-        /**
-         * Get index of Tag from the TAGS String array
-         */
-        for (int i=0;i<TAGS.length;i++) {
-            if (TAGS[i].equals(tag)) {
-                return i;
-            }
-        }
-        return -1;
     }
 }

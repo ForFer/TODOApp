@@ -26,10 +26,13 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import collado.fernando.todoapp.R;
+import collado.fernando.todoapp.helpers.DBHelper;
 import collado.fernando.todoapp.helpers.StringXAxisValueFormatter;
 import collado.fernando.todoapp.models.Stat;
+import collado.fernando.todoapp.models.Task;
 
 /**
  * Created by Fernando on 11/02/18.
@@ -44,11 +47,31 @@ public class Stats extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.stats);
 
-        TAGS = getIntent().getStringExtra("TAGS").split(",");
+        DBHelper db = new DBHelper(this);
 
-        Intent intent = getIntent();
-        ArrayList<Stat> stats = intent.getParcelableArrayListExtra("stats");
+        TAGS = db.getAllTags();
 
+        // Calculate an int array that has in the [0,TAGS.length] positions
+        // the total per TAG tasks assigned, in the [TAGS.length,endOfArray] positions
+        // the tasks done
+        // Example
+        // Tag  Personal Exercise Study
+        // [0,2]   3        2       4
+        // [3,5]   1        2       3
+
+        int tagsSize = TAGS.length;
+        int []tags = new int[tagsSize*2];
+        Map<String, ArrayList<Task>> tasks_by_day = db.getAllTasks();
+        for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
+            ArrayList<Task> tasks = entry.getValue();
+            for(Task task : tasks){
+                int index = getIndexFromTag(task.getTag());
+                tags[index > -1 ? index : 0] += 1;
+                if(task.isDone()) tags[index+tagsSize] += 1;
+            }
+        }
+
+        ArrayList<Stat> stats = db.getAllStats();
         List<Entry> entries = new ArrayList<>();
 
         String[] dates = new String[stats.size()];
@@ -57,6 +80,7 @@ public class Stats extends AppCompatActivity{
         int total = 0;
         int done = 0;
 
+        // Creates entries for the absolute and relative charts
         for(Stat stat : stats){
             Float relative = ( (float) stat.getDone() / stat.getTotal()) * 100;
 
@@ -74,12 +98,20 @@ public class Stats extends AppCompatActivity{
         printLinearChart(entries, dates);
         printPieChart(getPieData(total, done));
         printTotalBarChart(total, done);
+        printAbsoluteByTagBarChart(Arrays.copyOfRange(tags, 0, TAGS.length));
+        printRelativeByTagBarChart(tags);
+    }
 
-        String[]  tag_info = getIntent().getStringExtra("tasks").split(",");
-        String[] absolute_tags = Arrays.copyOfRange(tag_info, 0, TAGS.length);
-
-        printAbsoluteByTagBarChart(absolute_tags);
-        printRelativeByTagBarChart(tag_info);
+    private int getIndexFromTag(String tag){
+        /**
+         * Get index of Tag from the TAGS String array
+         */
+        for (int i=0;i<TAGS.length;i++) {
+            if (TAGS[i].equals(tag)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private PieData getPieData(int total, int done){
@@ -175,7 +207,7 @@ public class Stats extends AppCompatActivity{
         barChartFromData(bChart, barEntries, new String[] { "Total", "Done" });
     }
 
-    private void printAbsoluteByTagBarChart(String[] tags){
+    private void printAbsoluteByTagBarChart(int[] tags){
         /**
          * Handles (absolute data) BarChart creation and settings
          */
@@ -186,11 +218,11 @@ public class Stats extends AppCompatActivity{
         List<BarEntry> barEntries = new ArrayList<>();
         int total = 0;
         for(int i=0; i<TAGS.length; i++){
-            total += Integer.parseInt(tags[i]);
+            total += tags[i];
         }
         for(int i=0; i<TAGS.length; i++){
             float tagValue = 0;
-            if(total>0) tagValue = (float)Integer.parseInt(tags[i])/total * 100;
+            if(total>0) tagValue = (float)tags[i]/total * 100;
             BarEntry barEntryTag = new BarEntry(i, tagValue, TAGS[i]);
             barEntries.add(barEntryTag);
         }
@@ -198,7 +230,7 @@ public class Stats extends AppCompatActivity{
         barChartFromData(bChart, barEntries, TAGS);
     }
 
-    private void printRelativeByTagBarChart(String[] tags){
+    private void printRelativeByTagBarChart(int[] tags){
         /**
         * Handles (relative data) BarChart creation and settings
         */
@@ -211,8 +243,8 @@ public class Stats extends AppCompatActivity{
 
         for(int i=0; i<tagSize; i++){
             float tagValue = 0;
-            if(Integer.parseInt(tags[i]) != 0){
-                tagValue = (float)Integer.parseInt(tags[i+tagSize])/Integer.parseInt(tags[i]) * 100;
+            if(tags[i] != 0){
+                tagValue = (float)tags[i+tagSize]/tags[i] * 100;
             }
             BarEntry barEntryTag = new BarEntry(i, tagValue, TAGS[i]);
             barEntries.add(barEntryTag);
@@ -230,6 +262,8 @@ public class Stats extends AppCompatActivity{
         XAxis xAxis = bChart.getXAxis();
         xAxis.setGranularity(1f);
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setLabelCount(TAGS.length);
+        if(TAGS.length>8) xAxis.setLabelRotationAngle(-60f);
         xAxis.setValueFormatter(new StringXAxisValueFormatter(xAxisValues));
 
         YAxis leftAxis = bChart.getAxisLeft();
