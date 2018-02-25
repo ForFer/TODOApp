@@ -4,6 +4,7 @@ Daily TODO Android App with double purpose of:
 - Learning android 
 
 End result (not everything in the app is displayed here):
+<img src="https://i.imgur.com/p027nUt.jpg" width="200">
 ![](https://i.imgur.com/p027nUt.jpg)
 ![](https://i.imgur.com/rVO5Y48.jpg)
 ![](https://i.imgur.com/hgKM1dI.jpg)
