@@ -40,7 +40,6 @@ import collado.fernando.todoapp.helpers.DBHelper;
 import collado.fernando.todoapp.models.Task;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
-@TargetApi(16)
 public class MainActivity extends AppCompatActivity {
 
     protected DBHelper db;
@@ -49,8 +48,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView sectionHeader;
     private String _bannerDate;
     SharedPreferences preferences;
+    SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
+    NotificationManager notificationManager;
 
-    //private String[] TAGS = new String[]{"No tag", "Personal", "Android", "WICE", "Ejercicio", "Work", "TFG", "Free time"};
     private String[] TAGS;
     private String NIGHT_NOTIFICATION_TEXT = "Remember to set your tasks for the next day";
 
@@ -60,6 +60,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+                setNotifications();
+            }
+        };
+        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -81,9 +88,8 @@ public class MainActivity extends AppCompatActivity {
         this.setBanner(getDate());
         this.setNotifications();
 
-        NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.cancelAll();
-
+        notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        cancelNotifications();
     }
 
     @Override
@@ -123,15 +129,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
+        cancelNotifications();
         updateBanner();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        updateBanner();
+    protected void cancelNotifications(){
+        notificationManager.cancelAll();
     }
 
     protected void updateBanner(){
@@ -159,7 +164,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected String[] getDate() {
-
+        /**
+         * Returns [dayOfTheWeek,date]
+         */
         String[] _date = new String[2];
 
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
@@ -176,15 +183,12 @@ public class MainActivity extends AppCompatActivity {
     private void setNotifications(){
         /**
          * Set daily notifications
-         * TODO: Change according to settings
          * Current behaviour: 2 daily notifications:
          *   - One at night to remind me to set my tasks for the next day
          *   - The other one ~ 5pm, to remind me to check the app and do stuff
          */
 
-        boolean notif1 = preferences.getBoolean("switch_notif_1", true);
-
-        if(notif1){
+        if(preferences.getBoolean("switch_notif_1", true)){
 
             String[] date = preferences.getString("notification_time_1", "22:30:00").split(":");
             Calendar calendar = calendarFromDate(date);
@@ -193,9 +197,7 @@ public class MainActivity extends AppCompatActivity {
             setNotification(big_text,"", "1",calendar);
         }
 
-        boolean notif2 = preferences.getBoolean("switch_notif_2", true);
-
-        if(notif2) {
+        if(preferences.getBoolean("switch_notif_2", true)) {
 
             String[] date = preferences.getString("notification_time_2", "17:30:00").split(":");
             Calendar calendar = calendarFromDate(date);
@@ -227,11 +229,10 @@ public class MainActivity extends AppCompatActivity {
         /**
          * Set daily notifications
          */
-        //TODO: FIX putExtra -> values not being received at AlarmReceiver
 
         Intent notificationIntent = new Intent(this, AlarmReceiver.class);
-        notificationIntent.putExtra("BIG_CONTENT_TITLE", big_content_title);
-        notificationIntent.putExtra("BIG_TEXT", big_text);
+        notificationIntent.putExtra("CONTENT_TEXT", big_content_title);
+        notificationIntent.putExtra("CONTENT_TITLE", big_text);
         notificationIntent.putExtra("CHANNEL_ID", channel_id);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -272,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setTitle("Add TODO");
 
         LayoutInflater inflater = getLayoutInflater();
-        View alertLayout = inflater.inflate(R.layout.add_task_dialog, null);
+        View alertLayout = inflater.inflate(R.layout.dialog_add_task, null);
         final EditText input = alertLayout.findViewById(R.id.add_task_dialog);
         final DatePicker datePicker = alertLayout.findViewById(R.id.date_picker_dialog);
         final Spinner dropdown = alertLayout.findViewById(R.id.add_tag);

@@ -21,8 +21,8 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:background="@drawable/todo_list"
+            android:layout_height="120dp"
+            android:background="@drawable/todo_list_small"
             />
 
         <TextView

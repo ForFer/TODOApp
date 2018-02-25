@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -34,7 +33,7 @@ public class EditTags extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.edit_tags);
+        setContentView(R.layout.activity_edit_tags);
 
         db = new DBHelper(this);
         TAGS = db.getAllTags();

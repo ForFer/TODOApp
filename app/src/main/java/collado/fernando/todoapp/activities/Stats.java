@@ -45,7 +45,7 @@ public class Stats extends AppCompatActivity{
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.stats);
+        setContentView(R.layout.activity_stats);
 
         DBHelper db = new DBHelper(this);
 

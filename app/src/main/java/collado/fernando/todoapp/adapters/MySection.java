@@ -90,7 +90,7 @@ public class MySection extends StatelessSection {
                 builder.setTitle("Edit TODO");
 
                 LayoutInflater inflater = (LayoutInflater) mainContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View alertLayout = inflater.inflate(R.layout.edit_task, null);
+                View alertLayout = inflater.inflate(R.layout.dialog_edit_task, null);
                 final EditText input = alertLayout.findViewById(R.id.edit_task_name);
                 final Spinner dropdown = alertLayout.findViewById(R.id.edit_task_tag);
 

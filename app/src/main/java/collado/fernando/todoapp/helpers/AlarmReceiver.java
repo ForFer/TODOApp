@@ -20,20 +20,19 @@ import collado.fernando.todoapp.activities.MainActivity;
 
 /**
  * Created by Fernando on 18/02/18.
- * Code is a mix from answers:
+ * Code is inspired from Stackoverflow answers:
  * https://stackoverflow.com/a/23440985/6648597
  * https://stackoverflow.com/a/16448278/6648597
  */
 
 public class AlarmReceiver extends BroadcastReceiver {
 
-    private static String BIG_CONTENT_TITLE       = "Remember to set your tasks for the next day";
-    private static String BIG_TEXT                = "";
-    private static String SUMMARY_TEXT            = "";
-    private static final String CONTENT_TITLE     = "TODO App notification";
-    private static final String CONTENT_TEXT      = "Remember TODO stuff ;)";
-    private static String CHANNEL_ID              = "1";
-    private static final String CHANNEL_NAME      = "Channel human readable title";
+    // Default values in case the ones from the Bundle extras are not set
+    // or properly received
+    private String CONTENT_TITLE = "Remember to set your tasks for the next day";
+    private String CONTENT_TEXT  = "Remember TODO stuff ;)";
+    private String CHANNEL_ID    = "1";
+    private String CHANNEL_NAME  = "TODO Channel";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -41,29 +40,24 @@ public class AlarmReceiver extends BroadcastReceiver {
         Intent notificationIntent = new Intent(context, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        /*
-        BIG_CONTENT_TITLE = notificationIntent.getStringExtra("BIG_CONTENT_TITLE");
-        BIG_TEXT = notificationIntent.getStringExtra("BIG_TEXT");
-        SUMMARY_TEXT = notificationIntent.getStringExtra("SUMMARY_TEXT");
-        CHANNEL_ID = notificationIntent.getStringExtra("CHANNEL_ID");
-        */
+        Bundle extras = intent.getExtras();
+        if(extras != null){
+            CONTENT_TITLE = extras.getString("CONTENT_TITLE");
+            CONTENT_TEXT = extras.getString("CONTENT_TEXT");
+            CHANNEL_ID = extras.getString("CHANNEL_ID");
+        }
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context.getApplicationContext(), CHANNEL_ID);
         Intent ii = new Intent(context.getApplicationContext(), MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, Integer.parseInt(CHANNEL_ID), ii, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
-        bigText.bigText(BIG_TEXT);
-        bigText.setBigContentTitle(BIG_CONTENT_TITLE);
-        bigText.setSummaryText(SUMMARY_TEXT);
 
         mBuilder.setContentIntent(pendingIntent);
         mBuilder.setSmallIcon(R.drawable.ic_small_clipboard);
         mBuilder.setContentTitle(CONTENT_TITLE);
         mBuilder.setContentText(CONTENT_TEXT);
         mBuilder.setPriority(Notification.PRIORITY_MAX);
-        mBuilder.setStyle(bigText);
 
         NotificationManager mNotificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -76,7 +70,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             mNotificationManager.createNotificationChannel(channel);
         }
 
-        mNotificationManager.notify(0, mBuilder.build());
+        mNotificationManager.notify(Integer.parseInt(CHANNEL_ID), mBuilder.build());
 
     }
 
