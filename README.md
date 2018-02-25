@@ -7,7 +7,7 @@ Daily TODO Android App with double purpose of:
 End result (not everything in the app is displayed here):  
 <img src="https://i.imgur.com/p027nUt.jpg" width="200">
 <img src="https://i.imgur.com/rVO5Y48.jpg" width="200">
-<img src="https://i.imgur.com/hgKM1dI.jpg" width="200">
+<img src="https://i.imgur.com/hgKM1dI.jpg" width="200">  
 <img src="https://i.imgur.com/SUSPR2O.jpg" width="200">
 <img src="https://i.imgur.com/R4U8k2k.jpg" width="200">
 
