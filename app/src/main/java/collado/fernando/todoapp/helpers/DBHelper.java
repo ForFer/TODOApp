@@ -42,8 +42,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "tasks.db";
 
-    private static final String STATS_QUERY_LIMIT = "30";
-    private static final String TASKS_QUERY_LIMIT = "30";
+    private static final String STATS_QUERY_LIMIT = "1000";
+    private static final String TASKS_QUERY_LIMIT = "1000";
 
     private static final String NO_TAG = "No tag";
 
@@ -574,5 +574,52 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues value = new ContentValues();
         value.put(tag.KEY_NAME, tag.getName());
         return value;
+    }
+
+    public ArrayList<Task> customTaskQuery(String query, String[] query_args){
+        /**
+         * Execute custom query from query + args
+         * TODO:
+         * Generalize for any query, including a third parameter Class c, and checking
+         * the name to convert cursor to that class
+         */
+
+        ArrayList<Task> tasks = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery(query, query_args);
+
+        if(cursor.moveToFirst()){
+            Task task;
+            do {
+                task = cursorToTask(cursor);
+                tasks.add(task);
+            } while(cursor.moveToNext());
+        }
+
+        return tasks;
+    }
+
+    public ArrayList<Task> customTaskQuery(String query){
+        /**
+         * Execute custom query from query with no additional (or hardcoded) arguments
+         * TODO:
+         * Generalize for any query, including a third parameter Class c, and checking
+         * the name to convert cursor to that class
+         */
+        ArrayList<Task> tasks = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        if(cursor.moveToFirst()){
+            Task task;
+            do {
+                task = cursorToTask(cursor);
+                tasks.add(task);
+            } while(cursor.moveToNext());
+        }
+
+        return tasks;
     }
 }

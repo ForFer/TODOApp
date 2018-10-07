@@ -1,6 +1,5 @@
 package collado.fernando.todoapp.activities;
 
-import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
@@ -28,10 +27,14 @@ import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import collado.fernando.todoapp.R;
 import collado.fernando.todoapp.adapters.MySection;
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         db = new DBHelper(this);
 
         TAGS = db.getAllTags();
+        createDailyTasks();
 
         FloatingActionButton addTask = findViewById(R.id.addTask);
         addTask.setOnClickListener(new View.OnClickListener() {
@@ -90,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
 
         notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         cancelNotifications();
+
+
     }
 
     @Override
@@ -245,6 +251,53 @@ public class MainActivity extends AppCompatActivity {
         am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
     }
 
+    private void createDailyTasks(){
+        /**
+         * Ideally this method would be used with a daily reminder menu, in which you can set
+         * which task you want to set for repetition, and how often (daily, every other day...)
+         * There should be another method that retrieves the tasks from preferences or from DB,
+         * gives a map task->tag, and in this method, dynamically create the string from keys,
+         * and pass the arguments accordingly
+         * For the moment, hard-coded repeated tasks
+         *
+         */
+
+        String[] repeatingTasks = {"dutch", "french"};
+        Map<String, String> taskMap = new HashMap();
+        taskMap.put("dutch", "languages");
+        taskMap.put("french", "languages");
+
+
+        Calendar c = Calendar.getInstance();
+
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        int month = c.get(Calendar.MONTH)+1;
+        int year = c.get(Calendar.YEAR);
+
+        String str_day = day<=9?"0"+String.valueOf(day):String.valueOf(day);
+        String str_month = month<=9?"0"+String.valueOf(month):String.valueOf(month);
+        String current_date = String.valueOf(year) + "-" + str_month + "-" +  str_day ;
+
+        String query = "SELECT * FROM tasks where date = ? AND (task = ? OR task = ?)";
+
+        ArrayList<Task> today_tasks = db.customTaskQuery(query,
+                new String[] { current_date, repeatingTasks[0], repeatingTasks[1] });
+
+        // Nice way of doing from api 24 onwards
+        //List<String> tasks = today_tasks.stream().map(x -> x.getName()).collect(Collectors.toList());
+        List<String> tasks = new ArrayList<>();
+        for(Task t: today_tasks){
+            tasks.add(t.getName().toLowerCase());
+        }
+
+        for(String toAdd: repeatingTasks){
+            if (!tasks.contains(toAdd)){
+                Task t = new Task(toAdd, System.currentTimeMillis(), current_date, taskMap.get(toAdd));
+                db.addTask(t);
+            }
+        }
+    }
+
     private void setLinearLayoutManager(){
         /**
          * Sets a LinearLayoutManager with a SectionedRecyclerView
@@ -322,6 +375,7 @@ public class MainActivity extends AppCompatActivity {
         SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
         tasks_by_day = db.getAllTasks();
         mySections = new ArrayList<>();
+
 
         for(Map.Entry<String,ArrayList<Task>> entry : tasks_by_day.entrySet()){
             String section_d = entry.getKey();

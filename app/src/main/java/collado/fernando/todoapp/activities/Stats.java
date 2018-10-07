@@ -204,7 +204,7 @@ public class Stats extends AppCompatActivity{
         barEntries.add(barEntryDone);
         barEntries.add(barEntryTotal);
 
-        barChartFromData(bChart, barEntries, new String[] { "Total", "Done" });
+        barChartFromData(bChart, barEntries, new String[] { "Total", "Done" }, 0);
     }
 
     private void printAbsoluteByTagBarChart(int[] tags){
@@ -227,7 +227,7 @@ public class Stats extends AppCompatActivity{
             barEntries.add(barEntryTag);
         }
 
-        barChartFromData(bChart, barEntries, TAGS);
+        barChartFromData(bChart, barEntries, TAGS, 310f);
     }
 
     private void printRelativeByTagBarChart(int[] tags){
@@ -250,10 +250,10 @@ public class Stats extends AppCompatActivity{
             barEntries.add(barEntryTag);
         }
 
-        barChartFromData(bChart, barEntries, TAGS);
+        barChartFromData(bChart, barEntries, TAGS, 310f);
     }
 
-    private void barChartFromData(BarChart bChart, List<BarEntry> barEntries, String[] xAxisValues) {
+    private void barChartFromData(BarChart bChart, List<BarEntry> barEntries, String[] xAxisValues, float rotation) {
 
         BarDataSet dataSet = new BarDataSet(barEntries, "");
 
@@ -261,6 +261,7 @@ public class Stats extends AppCompatActivity{
 
         XAxis xAxis = bChart.getXAxis();
         xAxis.setGranularity(1f);
+        xAxis.setLabelRotationAngle(rotation);
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setLabelCount(TAGS.length);
         if(TAGS.length>8) xAxis.setLabelRotationAngle(-60f);
